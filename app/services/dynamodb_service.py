@@ -323,3 +323,86 @@ class DynamoDBService:
             return {
                 "error": str(e)
             }
+
+    async def reset_all_processed_flags(self) -> dict:
+        """
+        Скидає is_processed = False для ВСІХ записів.
+        Використовує scan + batch update.
+        
+        Returns:
+            dict: Статистика операції
+        """
+        try:
+            logger.info("Starting bulk reset of is_processed flags...")
+            
+            # Отримуємо всі PK (первинні ключі)
+            all_keys = []
+            response = self.table.scan(
+                ProjectionExpression='pk',  # Беремо тільки ключі
+                FilterExpression=Attr('is_processed').eq(True)  # Тільки ті, що потрібно скинути
+            )
+            all_keys.extend(response.get('Items', []))
+            
+            # Пагінація
+            while 'LastEvaluatedKey' in response:
+                response = self.table.scan(
+                    ProjectionExpression='pk',
+                    FilterExpression=Attr('is_processed').eq(True),
+                    ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+                all_keys.extend(response.get('Items', []))
+            
+            total_items = len(all_keys)
+            logger.info(f"Found {total_items} processed items to reset")
+            
+            if total_items == 0:
+                return {
+                    "success": True,
+                    "total_items": 0,
+                    "updated": 0,
+                    "failed": 0,
+                    "message": "No processed items found"
+                }
+            
+            # Batch update по 25 записів (ліміт DynamoDB batch_writer)
+            batch_size = 25
+            updated_count = 0
+            failed_count = 0
+            
+            for i in range(0, total_items, batch_size):
+                batch = all_keys[i:i + batch_size]
+                
+                try:
+                    # Виконуємо batch update
+                    for item in batch:
+                        try:
+                            self.table.update_item(
+                                Key={'pk': item['pk']},
+                                UpdateExpression='SET is_processed = :val',
+                                ExpressionAttributeValues={':val': False}
+                            )
+                            updated_count += 1
+                        except Exception as e:
+                            logger.error(f"Failed to update {item['pk']}: {str(e)}")
+                            failed_count += 1
+                    
+                    logger.info(f"Processed batch {i//batch_size + 1}: {updated_count}/{total_items} updated")
+                    
+                except Exception as e:
+                    failed_count += len(batch)
+                    logger.error(f"Failed batch {i//batch_size + 1}: {str(e)}")
+            
+            result = {
+                "success": True,
+                "total_items": total_items,
+                "updated": updated_count,
+                "failed": failed_count,
+                "message": f"Reset completed: {updated_count} updated, {failed_count} failed"
+            }
+            
+            logger.info(f"Bulk reset completed: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error during bulk reset: {str(e)}")
+            raise Exception(f"Failed to reset is_processed flags: {str(e)}")

@@ -87,6 +87,26 @@ async def get_db_stats(
     return stats
 
 
+@router.post("/db/reset-all-processed")
+async def reset_all_processed_flags(
+    db_service = Depends(get_dynamodb_service)
+):
+    """
+    Скидає is_processed = False для ВСІХ записів в DynamoDB.
+    Використовує batch update для швидкості.
+    
+    ⚠️ ОБЕРЕЖНО: Ця операція скидає ВСІ processed прапорці!
+    """
+    try:
+        result = await db_service.reset_all_processed_flags()
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
 @router.get("/db/review/{source}/{review_id}")
 async def get_review_by_id(
     source: str,
@@ -178,6 +198,7 @@ async def root():
             },
             "database": {
                 "GET /db/stats": "Статистика DynamoDB (processed/unprocessed)",
+                "POST /db/reset-all-processed": "Скинути is_processed=False для ВСІХ записів (⚠️ BATCH UPDATE)",
                 "GET /db/review/{source}/{review_id}": "Отримати конкретний відгук за ID (приклад: /db/review/appstore/544007664)"
             },
             "mock_db": {
