@@ -6,6 +6,7 @@ import { RefreshCw, Calendar, AlertTriangle } from 'lucide-react';
 import CommentsFeed from './CommentsFeed';
 import StatsCards from './StatsCards';
 import LinearGraph from './LinearGraph';
+import AIInsights from './AIInsights';
 import { fetchStatistics, DATE_FILTERS } from '../lib/statistics';
 
 
@@ -16,7 +17,8 @@ export default function Dashboard() {
   const [dataSources, setDataSources] = useState({
     playStore: true,
     appStore: true,
-    trustpilot: true
+    trustpilot: true,
+    news: true
   });
   const [brandName, setBrandName] = useState('');
 
@@ -200,6 +202,16 @@ export default function Dashboard() {
           dateFilter={dateFilter} 
           DATE_FILTERS={DATE_FILTERS} 
         />
+
+        {/* AI Insights */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-8"
+        >
+          <AIInsights analytics={analytics} />
+        </motion.div>
 
         {/* Comments Feed */}
         <motion.div

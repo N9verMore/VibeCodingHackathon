@@ -62,7 +62,9 @@ export const mapFrontendToBackendPlatforms = (frontendSources) => {
     playStore: 'google_play',
     appStore: 'app_store',
     threads: 'threads',
-    trustpilot: 'trustpilot'
+    trustpilot: 'trustpilot',
+    news: 'news',
+    instagram: 'instagram'
   };
   
   return Object.entries(frontendSources)

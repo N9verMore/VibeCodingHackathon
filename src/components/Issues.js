@@ -14,7 +14,8 @@ export default function Issues() {
     playStore: true,
     appStore: true,
     threads: false,
-    trustpilot: false
+    trustpilot: false,
+    news: true
   });
 
   useEffect(() => {

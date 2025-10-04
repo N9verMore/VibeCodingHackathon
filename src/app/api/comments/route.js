@@ -28,7 +28,13 @@ export async function GET(request) {
     
     // Add sentiment filtering
     if (sentiment && sentiment !== 'all') {
-      requestBody.sentiment = sentiment;
+      try {
+        // Try to parse as JSON array first
+        requestBody.sentiment = JSON.parse(sentiment);
+      } catch (error) {
+        // If not valid JSON, treat as single sentiment string and convert to array
+        requestBody.sentiment = [sentiment];
+      }
     }
     
     // Add brand name filtering
