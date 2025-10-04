@@ -4,6 +4,7 @@
 import openai
 import json
 import logging
+from typing import List
 from fastapi import HTTPException
 from app.models import ReviewFromDB, LLMAnalysis
 
@@ -64,6 +65,65 @@ class OpenAIService:
                 detail=f"OpenAI processing failed: {str(e)}"
             )
 
+    async def analyze_reviews_batch(self, reviews: List[ReviewFromDB]) -> List[LLMAnalysis]:
+        """
+        Аналізує кілька відгуків в одному запиті до OpenAI (batch)
+
+        Args:
+            reviews: Список відгуків для аналізу
+
+        Returns:
+            List[LLMAnalysis]: Список результатів аналізу
+        """
+        if not reviews:
+            return []
+
+        prompt = self._build_batch_prompt(reviews)
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": self._get_batch_system_prompt()
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+
+            result = response.choices[0].message.content
+            parsed = json.loads(result)
+
+            # Парсимо масив результатів
+            analyses = []
+            for item in parsed["reviews"]:
+                analyses.append(LLMAnalysis(
+                    sentiment=item["sentiment"],
+                    description=item["description"],
+                    categories=item["categories"],
+                    severity=item["severity"]
+                ))
+
+            # Перевіряємо що кількість результатів співпадає з кількістю відгуків
+            if len(analyses) != len(reviews):
+                logger.error(f"Batch analysis mismatch: expected {len(reviews)}, got {len(analyses)}")
+                raise Exception(f"Batch analysis returned {len(analyses)} results for {len(reviews)} reviews")
+
+            return analyses
+
+        except Exception as e:
+            logger.error(f"OpenAI Batch API error: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"OpenAI batch processing failed: {str(e)}"
+            )
+
     def _get_system_prompt(self) -> str:
         """Системний промпт для LLM"""
         return """Ти - експерт з аналізу відгуків користувачів. 
@@ -87,6 +147,39 @@ class OpenAIService:
   "severity": "low|medium|high|critical"
 }"""
 
+    def _get_batch_system_prompt(self) -> str:
+        """Системний промпт для batch аналізу"""
+        return """Ти - експерт з аналізу відгуків користувачів.
+Твоє завдання: проаналізувати КІЛЬКА відгуків одночасно.
+
+Для КОЖНОГО відгуку визнач:
+- sentiment: позитивний/негативний/нейтральний
+- description: короткий опис
+- categories: масив категорій (оплата, інтерфейс, продуктивність, підтримка, функціональність, баги, дизайн, безпека, стабільність, інше)
+- severity: low/medium/high/critical
+
+Severity рівні:
+- low: косметичні проблеми (колір, дизайн)
+- medium: незручності в UI, мінорні баги
+- high: серйозні проблеми (втрата даних, проблеми з оплатою)
+- critical: креши, непрацездатність, проблеми безпеки
+
+ВІДПОВІДАЙ ТІЛЬКИ у форматі JSON:
+{
+  "reviews": [
+    {
+      "sentiment": "...",
+      "description": "...",
+      "categories": [...],
+      "severity": "..."
+    },
+    ...
+  ]
+}
+
+ДУЖЕ ВАЖЛИВО: Кількість об'єктів в масиві "reviews" МАЄ ТОЧНО співпадати з кількістю відгуків у запиті!
+Поверни результат У ТОМУ Ж ПОРЯДКУ, як відгуки у запиті."""
+
     def _build_prompt(self, review: ReviewFromDB) -> str:
         """
         Будує промпт для аналізу відгуку
@@ -106,3 +199,26 @@ class OpenAIService:
 
 Проаналізуй цей відгук та поверни результат у JSON форматі.
 """
+
+    def _build_batch_prompt(self, reviews: List[ReviewFromDB]) -> str:
+        """
+        Будує batch промпт для кількох відгуків
+
+        Args:
+            reviews: Список відгуків
+
+        Returns:
+            str: Batch промпт
+        """
+        prompt_parts = [f"Проаналізуй {len(reviews)} відгуків та поверни результат у JSON форматі.\n"]
+
+        for idx, review in enumerate(reviews, 1):
+            prompt_parts.append(f"\n--- Відгук {idx} ---")
+            prompt_parts.append(f"Джерело: {review.source.value}")
+            prompt_parts.append(f"Оцінка: {review.rating}/5")
+            if review.title:
+                prompt_parts.append(f"Заголовок: {review.title}")
+            prompt_parts.append(f"Текст: {review.text or 'Без тексту'}")
+            prompt_parts.append(f"Дата: {review.created_at.isoformat()}")
+
+        return "\n".join(prompt_parts)

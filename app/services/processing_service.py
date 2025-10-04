@@ -2,8 +2,9 @@
 # FILE: app/services/processing_service.py
 # ============================================
 import logging
+import asyncio
 from typing import Dict, List, Tuple
-from app.models import ProcessedReview
+from app.models import ProcessedReview, ReviewFromDB
 from .dynamodb_service import DynamoDBService
 from .openai_service import OpenAIService
 from .delivery_service import DeliveryService
@@ -29,7 +30,7 @@ class ReviewProcessingService:
 
     async def process_reviews(self) -> Dict:
         """
-        Основний метод обробки відгуків з батч-доставкою
+        Основний метод обробки відгуків з batch аналізом та паралелізмом
 
         Returns:
             Dict: Статистика обробки
@@ -44,24 +45,65 @@ class ReviewProcessingService:
 
         logger.info(f"Found {len(unprocessed_reviews)} unprocessed reviews")
 
-        # 2. Обробляємо кожен відгук через OpenAI + батч-доставка
-        current_batch = []  # ProcessedReview objects
-        current_batch_ids = []  # (source, id) tuples для mark_as_processed
-        
-        total_analyzed = 0  # Скільки відгуків проаналізовано через LLM
-        total_delivered = 0  # Скільки відгуків успішно доставлено
-        total_marked = 0  # Скільки відгуків помічено як is_processed=True
-        failed_analysis = 0  # Скільки відгуків не вдалося проаналізувати
-        failed_delivery = 0  # Скільки батчів не вдалося доставити
+        # 2. Розбиваємо на батчі по batch_size
+        batches = self._split_into_batches(unprocessed_reviews, self.batch_size)
+        logger.info(f"Split into {len(batches)} batches of {self.batch_size} reviews each")
 
-        for idx, review in enumerate(unprocessed_reviews, start=1):
-            try:
-                logger.info(f"Processing review {review.id} ({idx}/{len(unprocessed_reviews)})...")
+        # 3. Обробляємо всі батчі ПАРАЛЕЛЬНО
+        logger.info("Starting parallel batch processing...")
+        tasks = [self._process_batch(batch) for batch in batches]
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
 
-                # Аналіз через LLM
-                analysis = await self.openai_service.analyze_review(review)
+        # 4. Збираємо статистику
+        total_analyzed = 0
+        total_delivered = 0
+        total_marked = 0
+        failed_batches = 0
 
-                # Створюємо оброблений відгук
+        for result in batch_results:
+            if isinstance(result, Exception):
+                logger.error(f"Batch processing failed: {str(result)}")
+                failed_batches += 1
+            elif result:
+                total_analyzed += result.get('analyzed', 0)
+                total_delivered += result.get('delivered', 0)
+                total_marked += result.get('marked', 0)
+
+        logger.info(f"Processing complete: {total_analyzed} analyzed, {total_delivered} delivered")
+
+        return {
+            "analyzed": total_analyzed,
+            "delivered": total_delivered,
+            "marked_as_processed": total_marked,
+            "failed_batches": failed_batches,
+            "total": len(unprocessed_reviews),
+            "batch_size": self.batch_size,
+            "batches_processed": len(batches),
+            "message": f"Analyzed {total_analyzed}, delivered {total_delivered}, marked {total_marked} out of {len(unprocessed_reviews)} reviews"
+        }
+
+    async def _process_batch(self, reviews_batch: List[ReviewFromDB]) -> Dict:
+        """
+        Обробляє один батч відгуків (всі в одному промпті OpenAI)
+
+        Args:
+            reviews_batch: Батч відгуків для обробки
+
+        Returns:
+            Dict: Статистика обробки батчу
+        """
+        batch_id = f"{reviews_batch[0].id[:8]}...{reviews_batch[-1].id[:8]}"
+        logger.info(f"[Batch {batch_id}] Processing {len(reviews_batch)} reviews...")
+
+        try:
+            # 1. Аналізуємо ВСІ відгуки в батчі ОДНИМ запитом до OpenAI
+            analyses = await self.openai_service.analyze_reviews_batch(reviews_batch)
+
+            # 2. Створюємо ProcessedReview об'єкти
+            processed_reviews = []
+            batch_ids = []
+
+            for review, analysis in zip(reviews_batch, analyses):
                 processed_review = ProcessedReview(
                     id=review.id,
                     source=review.source,
@@ -71,71 +113,46 @@ class ReviewProcessingService:
                     created_at=review.created_at,
                     sentiment=analysis.sentiment,
                     description=analysis.description,
-                    categories=analysis.categories,  # Масив
+                    categories=analysis.categories,
                     severity=analysis.severity,
                     is_processed=True
                 )
+                processed_reviews.append(processed_review)
+                batch_ids.append((review.source.value, review.id))
 
-                current_batch.append(processed_review)
-                current_batch_ids.append((review.source.value, review.id))
-                total_analyzed += 1
-                
-                logger.info(f"Review {review.id} analyzed successfully")
+            logger.info(f"[Batch {batch_id}] All {len(processed_reviews)} reviews analyzed successfully")
 
-                # Перевіряємо чи заповнився батч
-                if len(current_batch) >= self.batch_size:
-                    logger.info(f"Batch of {len(current_batch)} reviews ready, delivering...")
-                    
-                    # Спроба доставити батч
-                    delivery_success = await self._deliver_batch(current_batch, current_batch_ids)
-                    
-                    if delivery_success:
-                        total_delivered += len(current_batch)
-                        total_marked += len(current_batch)
-                        logger.info(f"Batch delivered and marked successfully ({total_delivered}/{total_analyzed} delivered so far)")
-                    else:
-                        failed_delivery += 1
-                        logger.warning(f"Batch delivery failed - reviews will NOT be marked as processed")
-                    
-                    # Очищаємо батч незалежно від результату
-                    current_batch = []
-                    current_batch_ids = []
+            # 3. Доставляємо батч (атомарна операція)
+            delivery_success = await self._deliver_batch(processed_reviews, batch_ids, batch_id)
 
-            except Exception as e:
-                logger.error(f"Failed to analyze review {review.id}: {str(e)}")
-                failed_analysis += 1
-                continue
-
-        # 3. Відправляємо залишок (якщо є неповний батч)
-        if current_batch:
-            logger.info(f"Delivering final batch of {len(current_batch)} reviews...")
-            
-            delivery_success = await self._deliver_batch(current_batch, current_batch_ids)
-            
             if delivery_success:
-                total_delivered += len(current_batch)
-                total_marked += len(current_batch)
-                logger.info(f"Final batch delivered and marked ({total_delivered} total delivered)")
+                logger.info(f"[Batch {batch_id}] ✅ Complete: analyzed, delivered, and marked")
+                return {
+                    'analyzed': len(processed_reviews),
+                    'delivered': len(processed_reviews),
+                    'marked': len(processed_reviews)
+                }
             else:
-                failed_delivery += 1
-                logger.warning(f"Final batch delivery failed - reviews will NOT be marked as processed")
+                logger.warning(f"[Batch {batch_id}] ❌ Analysis done but delivery failed")
+                return {
+                    'analyzed': len(processed_reviews),
+                    'delivered': 0,
+                    'marked': 0
+                }
 
-        return {
-            "analyzed": total_analyzed,
-            "delivered": total_delivered,
-            "marked_as_processed": total_marked,
-            "failed_analysis": failed_analysis,
-            "failed_delivery_batches": failed_delivery,
-            "total": len(unprocessed_reviews),
-            "batch_size": self.batch_size,
-            "batches_sent": (total_delivered + self.batch_size - 1) // self.batch_size if total_delivered > 0 else 0,
-            "message": f"Analyzed {total_analyzed}, delivered {total_delivered}, marked {total_marked} out of {len(unprocessed_reviews)} reviews"
-        }
+        except Exception as e:
+            logger.error(f"[Batch {batch_id}] Failed to process: {str(e)}")
+            return {
+                'analyzed': 0,
+                'delivered': 0,
+                'marked': 0
+            }
 
     async def _deliver_batch(
         self, 
         batch: List[ProcessedReview], 
-        batch_ids: List[Tuple[str, str]]
+        batch_ids: List[Tuple[str, str]],
+        batch_id: str
     ) -> bool:
         """
         Доставляє батч відгуків і маркує їх як оброблені ТІЛЬКИ при успіху
@@ -143,24 +160,42 @@ class ReviewProcessingService:
         Args:
             batch: Список оброблених відгуків
             batch_ids: Список (source, id) для маркування
+            batch_id: ID батчу для логування
 
         Returns:
             bool: True якщо доставка і маркування успішні
         """
         try:
             # Спроба доставити
+            logger.info(f"[Batch {batch_id}] Delivering {len(batch)} reviews...")
             await self.delivery_service.deliver_processed_reviews(batch)
             
             # Якщо доставка успішна - маркуємо як оброблені
-            logger.info(f"Delivery successful, marking {len(batch_ids)} reviews as processed...")
+            logger.info(f"[Batch {batch_id}] Delivery successful, marking as processed...")
             
             for source, review_id in batch_ids:
                 await self.db_service.mark_as_processed(source, review_id)
             
-            logger.info(f"Successfully marked {len(batch_ids)} reviews as processed")
+            logger.info(f"[Batch {batch_id}] Successfully marked {len(batch_ids)} reviews as processed")
             return True
             
         except Exception as e:
-            logger.error(f"Batch delivery failed: {str(e)}")
-            logger.error(f"Reviews in this batch will remain unprocessed and can be retried later")
+            logger.error(f"[Batch {batch_id}] Delivery failed: {str(e)}")
+            logger.error(f"[Batch {batch_id}] Reviews will remain unprocessed for retry")
             return False
+
+    def _split_into_batches(self, items: List, batch_size: int) -> List[List]:
+        """
+        Розбиває список на батчі
+
+        Args:
+            items: Список елементів
+            batch_size: Розмір батчу
+
+        Returns:
+            List[List]: Список батчів
+        """
+        batches = []
+        for i in range(0, len(items), batch_size):
+            batches.append(items[i:i + batch_size])
+        return batches
