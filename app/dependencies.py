@@ -53,19 +53,16 @@ def get_delivery_service() -> DeliveryService:
     Використовує MockDeliveryService якщо USE_MOCK_DELIVERY=true в .env
     """
     settings = get_settings()
-    db_service = get_dynamodb_service()
 
     # Перевіряємо чи використовувати mock
     if getattr(settings, 'use_mock_delivery', True):
         return MockDeliveryService(
-            endpoint=settings.deliver_endpoint,
-            db_service=db_service
+            endpoint=settings.deliver_endpoint
         )
 
     # Повертаємо реальний сервіс
     return DeliveryService(
-        endpoint=settings.deliver_endpoint,
-        db_service=db_service
+        endpoint=settings.deliver_endpoint
     )
 
 

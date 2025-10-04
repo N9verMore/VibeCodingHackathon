@@ -4,6 +4,7 @@
 import httpx
 import logging
 from typing import List
+from datetime import datetime
 from fastapi import HTTPException
 from app.models import ProcessedReview
 
@@ -29,9 +30,29 @@ class DeliveryService:
         """
         async with httpx.AsyncClient() as client:
             try:
+                # Підготовка даних у потрібному форматі
+                reviews_data = []
+                for review in reviews:
+                    review_dict = review.model_dump(mode='json')
+                    # Перетворюємо enum в string
+                    review_dict['source'] = review.source.value
+                    review_dict['sentiment'] = review.sentiment.value
+                    # Перетворюємо datetime в ISO string
+                    if isinstance(review_dict.get('created_at'), datetime):
+                        review_dict['created_at'] = review.created_at.isoformat()
+                    reviews_data.append(review_dict)
+                
+                # Формуємо payload як очікує teammate
+                payload = {
+                    "reviews": reviews_data,
+                    "count": len(reviews_data)
+                }
+                
+                logger.info(f"Sending batch of {len(reviews)} reviews to {self.endpoint}")
+                
                 response = await client.post(
                     self.endpoint,
-                    json=[review.model_dump(mode='json') for review in reviews],
+                    json=payload,
                     timeout=30.0
                 )
                 response.raise_for_status()

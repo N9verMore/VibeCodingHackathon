@@ -2,7 +2,7 @@
 # FILE: app/services/processing_service.py
 # ============================================
 import logging
-from typing import Dict
+from typing import Dict, List, Tuple
 from app.models import ProcessedReview
 from .dynamodb_service import DynamoDBService
 from .openai_service import OpenAIService
@@ -45,10 +45,14 @@ class ReviewProcessingService:
         logger.info(f"Found {len(unprocessed_reviews)} unprocessed reviews")
 
         # 2. Обробляємо кожен відгук через OpenAI + батч-доставка
-        processed_reviews = []
-        current_batch = []
-        total_processed = 0
-        total_delivered = 0
+        current_batch = []  # ProcessedReview objects
+        current_batch_ids = []  # (source, id) tuples для mark_as_processed
+        
+        total_analyzed = 0  # Скільки відгуків проаналізовано через LLM
+        total_delivered = 0  # Скільки відгуків успішно доставлено
+        total_marked = 0  # Скільки відгуків помічено як is_processed=True
+        failed_analysis = 0  # Скільки відгуків не вдалося проаналізувати
+        failed_delivery = 0  # Скільки батчів не вдалося доставити
 
         for idx, review in enumerate(unprocessed_reviews, start=1):
             try:
@@ -72,37 +76,90 @@ class ReviewProcessingService:
                 )
 
                 current_batch.append(processed_review)
-                processed_reviews.append(processed_review)
-                total_processed += 1
-
-                # Оновлюємо статус в БД
-                await self.db_service.mark_as_processed(review.source, review.id)
-                logger.info(f"Review {review.id} processed successfully")
+                current_batch_ids.append((review.source.value, review.id))
+                total_analyzed += 1
+                
+                logger.info(f"Review {review.id} analyzed successfully")
 
                 # Перевіряємо чи заповнився батч
                 if len(current_batch) >= self.batch_size:
                     logger.info(f"Batch of {len(current_batch)} reviews ready, delivering...")
-                    await self.delivery_service.deliver_processed_reviews(current_batch)
-                    total_delivered += len(current_batch)
-                    logger.info(f"Batch delivered successfully ({total_delivered}/{total_processed} delivered so far)")
-                    current_batch = []  # Очищаємо батч
+                    
+                    # Спроба доставити батч
+                    delivery_success = await self._deliver_batch(current_batch, current_batch_ids)
+                    
+                    if delivery_success:
+                        total_delivered += len(current_batch)
+                        total_marked += len(current_batch)
+                        logger.info(f"Batch delivered and marked successfully ({total_delivered}/{total_analyzed} delivered so far)")
+                    else:
+                        failed_delivery += 1
+                        logger.warning(f"Batch delivery failed - reviews will NOT be marked as processed")
+                    
+                    # Очищаємо батч незалежно від результату
+                    current_batch = []
+                    current_batch_ids = []
 
             except Exception as e:
-                logger.error(f"Failed to process review {review.id}: {str(e)}")
+                logger.error(f"Failed to analyze review {review.id}: {str(e)}")
+                failed_analysis += 1
                 continue
 
         # 3. Відправляємо залишок (якщо є неповний батч)
         if current_batch:
             logger.info(f"Delivering final batch of {len(current_batch)} reviews...")
-            await self.delivery_service.deliver_processed_reviews(current_batch)
-            total_delivered += len(current_batch)
-            logger.info(f"Final batch delivered ({total_delivered} total delivered)")
+            
+            delivery_success = await self._deliver_batch(current_batch, current_batch_ids)
+            
+            if delivery_success:
+                total_delivered += len(current_batch)
+                total_marked += len(current_batch)
+                logger.info(f"Final batch delivered and marked ({total_delivered} total delivered)")
+            else:
+                failed_delivery += 1
+                logger.warning(f"Final batch delivery failed - reviews will NOT be marked as processed")
 
         return {
-            "processed": total_processed,
+            "analyzed": total_analyzed,
             "delivered": total_delivered,
+            "marked_as_processed": total_marked,
+            "failed_analysis": failed_analysis,
+            "failed_delivery_batches": failed_delivery,
             "total": len(unprocessed_reviews),
             "batch_size": self.batch_size,
-            "batches_sent": (total_delivered + self.batch_size - 1) // self.batch_size,  # ceiling division
-            "message": f"Successfully processed {total_processed} out of {len(unprocessed_reviews)} reviews, delivered in batches of {self.batch_size}"
+            "batches_sent": (total_delivered + self.batch_size - 1) // self.batch_size if total_delivered > 0 else 0,
+            "message": f"Analyzed {total_analyzed}, delivered {total_delivered}, marked {total_marked} out of {len(unprocessed_reviews)} reviews"
         }
+
+    async def _deliver_batch(
+        self, 
+        batch: List[ProcessedReview], 
+        batch_ids: List[Tuple[str, str]]
+    ) -> bool:
+        """
+        Доставляє батч відгуків і маркує їх як оброблені ТІЛЬКИ при успіху
+
+        Args:
+            batch: Список оброблених відгуків
+            batch_ids: Список (source, id) для маркування
+
+        Returns:
+            bool: True якщо доставка і маркування успішні
+        """
+        try:
+            # Спроба доставити
+            await self.delivery_service.deliver_processed_reviews(batch)
+            
+            # Якщо доставка успішна - маркуємо як оброблені
+            logger.info(f"Delivery successful, marking {len(batch_ids)} reviews as processed...")
+            
+            for source, review_id in batch_ids:
+                await self.db_service.mark_as_processed(source, review_id)
+            
+            logger.info(f"Successfully marked {len(batch_ids)} reviews as processed")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Batch delivery failed: {str(e)}")
+            logger.error(f"Reviews in this batch will remain unprocessed and can be retried later")
+            return False
