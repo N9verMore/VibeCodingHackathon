@@ -15,6 +15,12 @@ from typing import Dict, Any
 from serpapi_appstore_client import SerpAPIAppStoreClient
 from serpapi_googleplay_client import SerpAPIGooglePlayClient
 from serpapi_trustpilot_client import SerpAPITrustpilotClient
+from request_schema import (
+    CollectReviewsRequest,
+    CollectReviewsResponse,
+    parse_lambda_event,
+    format_lambda_response
+)
 
 # Import from Lambda Layer (located in /opt/python/)
 from application.collect_reviews_use_case import CollectReviewsUseCase
@@ -56,136 +62,64 @@ def lambda_handler(event, context):
         Response with statistics and status
     """
     logger.info("=" * 60)
-    logger.info("Unified Review Collector Lambda Started")
+    logger.info("🚀 Unified Review Collector Lambda Started")
     logger.info("=" * 60)
     logger.info(f"Event: {json.dumps(event, default=str)}")
     
     try:
-        # 🔍 Parse event and extract parameters
-        params = _parse_event(event)
-        logger.info(f"Parsed parameters: {params}")
-        
-        # ✅ Validate required fields
-        _validate_params(params)
+        # 🔍 Parse and validate request
+        request = parse_lambda_event(event)
+        logger.info(f"✅ Parsed request: {request.to_dict()}")
         
         # 🚀 Execute collection
-        stats = _collect_reviews(params)
+        stats = _collect_reviews(request)
         
         # 📊 Format success response
-        response = _format_response(200, {
-            'success': True,
-            'message': 'Reviews collected successfully',
-            'statistics': stats,
-            'input': {
-                'source': params['source'],
-                'app_identifier': params['app_identifier'],
-                'brand': params['brand'],
-                'limit': params.get('limit', 100)
-            }
-        })
+        response = CollectReviewsResponse.success_response(
+            message='Reviews collected successfully',
+            statistics=stats,
+            request_data=request.to_dict()
+        )
         
         logger.info("=" * 60)
-        logger.info("Lambda execution completed successfully")
+        logger.info("✅ Lambda execution completed successfully")
         logger.info("=" * 60)
         
-        return response
+        return format_lambda_response(200, response)
         
     except ValueError as e:
         logger.error(f"❌ Validation error: {e}")
-        return _format_response(400, {
-            'success': False,
-            'error': 'Validation error',
-            'message': str(e)
-        })
+        response = CollectReviewsResponse.error_response(
+            error='ValidationError',
+            message=str(e),
+            request_data=event if isinstance(event, dict) else {}
+        )
+        return format_lambda_response(400, response)
         
     except Exception as e:
         logger.error(f"❌ Execution failed: {e}", exc_info=True)
-        return _format_response(500, {
-            'success': False,
-            'error': 'Internal server error',
-            'message': str(e)
-        })
-
-
-def _parse_event(event: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Parse event and extract parameters based on invocation method.
-    
-    Args:
-        event: Raw Lambda event
-        
-    Returns:
-        Parsed parameters dictionary
-    """
-    # Method 1: API Gateway (has 'httpMethod' or 'body' field)
-    if 'httpMethod' in event or 'body' in event:
-        logger.info("📡 Invocation method: API Gateway")
-        body_str = event.get('body', '{}')
-        
-        # Handle both string and dict body
-        if isinstance(body_str, str):
-            params = json.loads(body_str)
-        else:
-            params = body_str
-            
-        return params
-    
-    # Method 2: Direct Lambda Invoke
-    else:
-        logger.info("⚡ Invocation method: Direct Invoke")
-        return event
-
-
-def _validate_params(params: Dict[str, Any]) -> None:
-    """
-    Validate required parameters.
-    
-    Args:
-        params: Parameters dictionary
-        
-    Raises:
-        ValueError: If validation fails
-    """
-    # Required fields
-    required_fields = ['source', 'app_identifier', 'brand']
-    
-    for field in required_fields:
-        if field not in params or not params[field]:
-            raise ValueError(f"Missing required field: '{field}'")
-    
-    # Validate source
-    valid_sources = ['appstore', 'googleplay', 'trustpilot']
-    source = params['source'].lower()
-    
-    if source not in valid_sources:
-        raise ValueError(
-            f"Invalid source: '{source}'. "
-            f"Must be one of: {', '.join(valid_sources)}"
+        response = CollectReviewsResponse.error_response(
+            error='InternalServerError',
+            message=str(e),
+            request_data=event if isinstance(event, dict) else {}
         )
-    
-    # Validate limit (optional)
-    if 'limit' in params:
-        limit = params['limit']
-        if not isinstance(limit, int) or limit < 1 or limit > 500:
-            raise ValueError("'limit' must be an integer between 1 and 500")
-    
-    logger.info("✅ Parameters validated successfully")
+        return format_lambda_response(500, response)
 
 
-def _collect_reviews(params: Dict[str, Any]) -> Dict[str, Any]:
+def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
     """
     Execute review collection workflow.
     
     Args:
-        params: Validated parameters
+        request: Validated CollectReviewsRequest
         
     Returns:
         Statistics dictionary
     """
-    source = params['source'].lower()
-    app_identifier = params['app_identifier']
-    brand = params['brand']
-    limit = params.get('limit', 100)
+    source = request.source
+    app_identifier = request.app_identifier
+    brand = request.brand
+    limit = request.limit
     
     logger.info(f"🎯 Collecting reviews from {source} for {brand} (app: {app_identifier})")
     
@@ -228,27 +162,4 @@ def _collect_reviews(params: Dict[str, Any]) -> Dict[str, Any]:
     logger.info(f"📊 Collection statistics: {stats}")
     
     return stats
-
-
-def _format_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Format Lambda response for different invocation methods.
-    
-    Args:
-        status_code: HTTP status code
-        body: Response body
-        
-    Returns:
-        Formatted response dictionary
-    """
-    return {
-        'statusCode': status_code,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        },
-        'body': json.dumps(body, default=str, ensure_ascii=False)
-    }
 
