@@ -27,6 +27,7 @@ from request_schema import (
 from application.collect_reviews_use_case import CollectReviewsUseCase
 from infrastructure.repositories.dynamodb_review_repository import DynamoDBReviewRepository
 from infrastructure.clients.secrets_client import SecretsClient
+from utils.brand_normalizer import normalize_brand_for_storage
 
 
 # Configure logging
@@ -84,6 +85,16 @@ def lambda_handler(event, context):
         # 🔍 Parse and validate request
         request = parse_lambda_event(event)
         logger.info(f"✅ Parsed request: {request.to_dict()}")
+        
+        # Skip if app_identifier is empty (source not provided in original request)
+        if not request.app_identifier or request.app_identifier.strip() == '':
+            logger.info(f"⏭️  Skipping {request.source} - no app_identifier provided")
+            return format_lambda_response(200, {
+                'success': True,
+                'message': f'{request.source} skipped - not requested',
+                'statistics': {'fetched': 0, 'saved': 0, 'skipped': 0},
+                'request': request.to_dict()
+            })
         
         # 🚀 Execute collection (sync for all sources)
         stats = _collect_reviews(request, job_id=job_id)
@@ -177,6 +188,10 @@ def _collect_reviews(request: CollectReviewsRequest, job_id: str = None) -> Dict
     
     logger.info(f"✅ Initialized {api_client.__class__.__name__}")
     
+    # Normalize brand for storage (lowercase with underscores)
+    normalized_brand = normalize_brand_for_storage(brand)
+    logger.info(f"📝 Brand normalization: '{brand}' -> '{normalized_brand}'")
+    
     # Initialize repository with job_id support
     repository = DynamoDBReviewRepository(job_id=job_id)
     logger.info("✅ Initialized DynamoDB repository")
@@ -188,7 +203,7 @@ def _collect_reviews(request: CollectReviewsRequest, job_id: str = None) -> Dict
     stats = use_case.execute(
         credentials={},  # API credentials already in client
         app_identifier=app_identifier,
-        brand=brand,
+        brand=normalized_brand,  # Use normalized brand for storage
         since=None,
         limit=limit
     )

@@ -291,6 +291,12 @@ def format_lambda_response(
     Returns:
         Formatted Lambda response
     """
+    # Handle both dict and CollectReviewsResponse object
+    if isinstance(response, dict):
+        body = json.dumps(response)
+    else:
+        body = response.to_json()
+    
     return {
         'statusCode': status_code,
         'headers': {
@@ -299,6 +305,6 @@ def format_lambda_response(
             'Access-Control-Allow-Headers': 'Content-Type,Authorization',
             'Access-Control-Allow-Methods': 'POST,OPTIONS'
         },
-        'body': response.to_json()
+        'body': body
     }
 

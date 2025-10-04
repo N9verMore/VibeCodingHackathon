@@ -44,6 +44,7 @@ class CollectNewsUseCase:
         brand: str,
         limit: int = 100,
         search_type: str = "everything",
+        brand_for_storage: Optional[str] = None,
         from_date: Optional[date] = None,
         to_date: Optional[date] = None,
         language: Optional[str] = None,
@@ -121,8 +122,10 @@ class CollectNewsUseCase:
             
             # Step 2: Convert to NewsArticle entities
             logger.info("🔄 Converting to NewsArticle entities...")
-            articles = self._convert_to_entities(raw_articles, brand, country)
-            logger.info(f"✅ Converted {len(articles)} articles")
+            # Use brand_for_storage if provided, otherwise use brand
+            brand_to_store = brand_for_storage if brand_for_storage else brand
+            articles = self._convert_to_entities(raw_articles, brand_to_store, country)
+            logger.info(f"✅ Converted {len(articles)} articles (storing as '{brand_to_store}')")
             
             # Step 3: Save to database
             logger.info("💾 Saving articles to database...")

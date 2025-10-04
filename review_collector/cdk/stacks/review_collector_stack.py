@@ -272,7 +272,7 @@ class ReviewCollectorStack(Stack):
                 }
             ),
             layers=[shared_layer],
-            timeout=Duration.seconds(120),  # Extended for DataForSEO polling (can take 30-90 sec)
+            timeout=Duration.seconds(900),  # 15 minutes (max for Lambda)
             memory_size=512,
             environment={
                 "TABLE_NAME": table.table_name,
@@ -316,7 +316,7 @@ class ReviewCollectorStack(Stack):
                 }
             ),
             layers=[shared_layer],
-            timeout=Duration.seconds(120),
+            timeout=Duration.seconds(900),  # 15 minutes (max for Lambda)
             memory_size=512,
             environment={
                 "TABLE_NAME": table.table_name,
@@ -529,7 +529,7 @@ class ReviewCollectorStack(Stack):
             self, "CallProcessingEndpoint",
             lambda_function=http_caller_lambda,
             payload=sfn.TaskInput.from_object({
-                "endpoint_url": sfn.JsonPath.string_at("$.processing_endpoint_url"),
+                "endpoint_url": "https://webhook.site/test-endpoint",  # Hardcoded stub
                 "job_id": sfn.JsonPath.string_at("$.job_id"),
                 "brand": sfn.JsonPath.string_at("$.brand"),
                 "collection_results": sfn.JsonPath.string_at("$.collection_results")

@@ -70,56 +70,34 @@ def lambda_handler(event, context):
             'POST',
             endpoint_url,
             body=encoded_data,
-            headers={
-                'Content-Type': 'application/json',
-                'User-Agent': 'AWS-Lambda-HTTP-Caller/1.0'
-            },
-            timeout=25.0  # Leave 5 seconds for Lambda overhead
+            headers={'Content-Type': 'application/json'},
+            timeout=25.0  # 25 seconds timeout
         )
         
-        status_code = response.status
-        logger.info(f"📥 Response status: {status_code}")
+        logger.info(f"✅ HTTP call completed")
+        logger.info(f"   Status Code: {response.status}")
+        logger.info(f"   Response: {response.data.decode('utf-8')[:500]}")
         
         # Parse response
-        response_data = None
+        response_data = {}
         if response.data:
             try:
                 response_data = json.loads(response.data.decode('utf-8'))
-                logger.info(f"   Response data: {json.dumps(response_data, indent=2)}")
             except json.JSONDecodeError:
-                response_text = response.data.decode('utf-8')
-                logger.warning(f"   Response is not JSON: {response_text[:200]}")
-                response_data = {'raw_response': response_text}
+                response_data = {'raw': response.data.decode('utf-8')}
         
-        # Check if successful
-        success = 200 <= status_code < 300
-        
-        result = {
-            'success': success,
-            'status_code': status_code,
-            'response': response_data,
-            'endpoint_url': endpoint_url
-        }
-        
-        if success:
-            logger.info("✅ HTTP call completed successfully")
-        else:
-            logger.warning(f"⚠️ HTTP call returned non-success status: {status_code}")
-        
-        return result
-        
-    except urllib3.exceptions.HTTPError as e:
-        logger.error(f"❌ HTTP error: {e}", exc_info=True)
         return {
-            'success': False,
-            'error': 'HTTPError',
-            'message': str(e)
+            'success': True,
+            'status_code': response.status,
+            'response': response_data,
+            'endpoint': endpoint_url
         }
+        
     except Exception as e:
         logger.error(f"❌ HTTP call failed: {e}", exc_info=True)
         return {
             'success': False,
-            'error': type(e).__name__,
-            'message': str(e)
+            'error': str(e),
+            'endpoint': event.get('endpoint_url', 'unknown')
         }
 

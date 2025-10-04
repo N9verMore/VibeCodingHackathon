@@ -26,6 +26,7 @@ from request_schema import (
 
 # Import from Lambda Layer (shared infrastructure)
 from infrastructure.clients.secrets_client import SecretsClient
+from utils.brand_normalizer import normalize_brand_for_storage, normalize_brand_for_search
 
 
 # Configure logging
@@ -135,7 +136,13 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
     Returns:
         Statistics dictionary
     """
+    # Normalize brand names
+    brand_for_storage = normalize_brand_for_storage(request.brand)
+    brand_for_search = normalize_brand_for_search(request.brand)
+    
     logger.info(f"🎯 Collecting news for brand: {request.brand}")
+    logger.info(f"   Brand for search: {brand_for_search}")
+    logger.info(f"   Brand for storage: {brand_for_storage}")
     logger.info(f"   Search type: {request.search_type}")
     logger.info(f"   Limit: {request.limit}")
     if job_id:
@@ -163,8 +170,10 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
     use_case = CollectNewsUseCase(api_client, repository)
     
     logger.info("🚀 Starting collection workflow...")
+    # Pass both brand names: search for API, storage for DB
     stats = use_case.execute(
-        brand=request.brand,
+        brand=brand_for_search,  # Use Title Case with spaces for API search
+        brand_for_storage=brand_for_storage,  # Use lowercase with underscores for DB
         limit=request.limit,
         search_type=request.search_type,
         from_date=request.from_date,

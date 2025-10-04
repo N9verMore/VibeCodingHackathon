@@ -203,17 +203,23 @@ def parse_lambda_event(event: Dict[str, Any]) -> CollectNewsRequest:
     )
 
 
-def format_lambda_response(status_code: int, response: CollectNewsResponse) -> Dict[str, Any]:
+def format_lambda_response(status_code: int, response) -> Dict[str, Any]:
     """
     Format response for Lambda/API Gateway.
     
     Args:
         status_code: HTTP status code
-        response: CollectNewsResponse object
+        response: CollectNewsResponse object or dict
         
     Returns:
         Lambda response dict
     """
+    # Handle both dict and CollectNewsResponse object
+    if isinstance(response, dict):
+        body = json.dumps(response, indent=2, default=str)
+    else:
+        body = json.dumps(response.to_dict(), indent=2, default=str)
+    
     return {
         'statusCode': status_code,
         'headers': {
@@ -222,6 +228,6 @@ def format_lambda_response(status_code: int, response: CollectNewsResponse) -> D
             'Access-Control-Allow-Headers': 'Content-Type,Authorization',
             'Access-Control-Allow-Methods': 'POST,OPTIONS'
         },
-        'body': json.dumps(response.to_dict(), indent=2, default=str)
+        'body': body
     }
 

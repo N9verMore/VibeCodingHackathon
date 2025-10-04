@@ -56,10 +56,16 @@ def lambda_handler(event, context):
         if not sources:
             raise ValueError("Field 'sources' is required and must not be empty")
         
-        processing_endpoint_url = event.get('processing_endpoint_url')
-        if not processing_endpoint_url:
-            raise ValueError("Field 'processing_endpoint_url' is required")
+        # Normalize sources - ensure all keys exist (empty string if not provided)
+        normalized_sources = {
+            'appstore': sources.get('appstore', ''),
+            'googleplay': sources.get('googleplay', ''),
+            'trustpilot': sources.get('trustpilot', '')
+        }
         
+        # Optional fields
+        processing_endpoint_url = event.get('processing_endpoint_url', 'https://webhook.site/test-endpoint')
+        include_news = event.get('include_news', True)
         limit = event.get('limit', 50)
         
         # Validate limit
@@ -72,16 +78,17 @@ def lambda_handler(event, context):
         
         logger.info(f"✅ Generated job_id: {job_id}")
         logger.info(f"   Brand: {brand}")
-        logger.info(f"   Sources: {list(sources.keys())}")
+        logger.info(f"   Sources: {[k for k, v in normalized_sources.items() if v]}")
         logger.info(f"   Limit: {limit}")
         
         # Prepare output
         result = {
             'job_id': job_id,
             'brand': brand,
-            'sources': sources,
+            'sources': normalized_sources,  # Use normalized sources with all keys
             'limit': limit,
-            'processing_endpoint_url': processing_endpoint_url,
+            'include_news': include_news,
+            'endpoint_url': processing_endpoint_url,  # Renamed for consistency
             'timestamp': timestamp.isoformat() + 'Z'
         }
         
