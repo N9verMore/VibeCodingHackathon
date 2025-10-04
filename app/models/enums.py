@@ -10,6 +10,9 @@ class ReviewSource(str, Enum):
     googleplay = "googleplay"
     trustpilot = "trustpilot"
     news = "news"
+    instagram = "instagram"
+    reddit = "reddit"
+    
 
 
 class Sentiment(str, Enum):

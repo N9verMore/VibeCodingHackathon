@@ -3,14 +3,8 @@
 # ============================================
 from fastapi import FastAPI
 import logging
-import asyncio
-import sys
 from app.api import router
 from app.config import get_settings
-
-# Налаштування event loop для Windows (для psycopg)
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Налаштування логування
 logging.basicConfig(

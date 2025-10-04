@@ -255,12 +255,9 @@ class DynamoDBService:
     def _item_to_review(self, item: dict) -> ReviewFromDB:
         """
         Конвертує DynamoDB item в ReviewFromDB модель
-
-        Args:
-            item: DynamoDB item
-
-        Returns:
-            ReviewFromDB: Parsed review
+        
+        ВАЖЛИВО: Якщо author_hint порожній, але text містить ім'я автора 
+        на першому рядку, витягуємо автора з тексту
         """
         # Парсимо дати
         created_at = item.get('created_at')
@@ -271,6 +268,21 @@ class DynamoDBService:
         if isinstance(fetched_at, str):
             fetched_at = datetime.fromisoformat(fetched_at.replace('Z', '+00:00'))
 
+        # Обробка author_hint та text
+        author_hint = item.get('author_hint')
+        text = item.get('text', '')
+        
+        # Якщо author_hint порожній але text містить автора на першому рядку
+        if (not author_hint or author_hint.strip() == '') and text and '\n' in text:
+            lines = text.split('\n', 1)
+            potential_author = lines[0].strip()
+            
+            # Перевіряємо чи схоже на ім'я (не довше 100 символів)
+            if potential_author and len(potential_author) < 100:
+                author_hint = potential_author
+                text = lines[1].strip() if len(lines) > 1 else text
+                logger.debug(f"Extracted author '{author_hint}' from text for review {item.get('id')}")
+
         return ReviewFromDB(
             id=item['id'],
             source=ReviewSource(item['source']),
@@ -279,11 +291,11 @@ class DynamoDBService:
             is_processed=item.get('is_processed', False),
             app_identifier=item['app_identifier'],
             title=item.get('title'),
-            text=item.get('text'),
+            text=text,
             rating=int(item['rating']) if item.get('rating') is not None and int(item.get('rating', -1)) > 0 else None,
             language=item['language'],
             country=item.get('country'),
-            author_hint=item.get('author_hint'),
+            author_hint=author_hint,
             created_at=created_at,
             fetched_at=fetched_at,
             content_hash=item['content_hash']

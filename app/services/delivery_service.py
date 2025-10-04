@@ -42,6 +42,11 @@ class DeliveryService:
                     if isinstance(review_dict.get('created_at'), datetime):
                         review_dict['created_at'] = review.created_at.isoformat()
                     # categories вже масив, нічого не робимо
+                    
+                    #DEBLOG: Перевіряємо author
+                    logger.debug(f"Review {review.id}: author={review.author}, text_start={review.text[:50] if review.text else 'None'}")
+                    logger.debug(f"Serialized author: {review_dict.get('author')}")
+                    
                     reviews_data.append(review_dict)
                 
                 # Формуємо payload як очікує teammate
