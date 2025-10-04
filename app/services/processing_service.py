@@ -3,7 +3,7 @@
 # ============================================
 import logging
 import asyncio
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from app.models import ProcessedReview, ReviewFromDB
 from app.services.dynamodb_service import DynamoDBService
 from app.services.openai_service import OpenAIService
@@ -28,7 +28,7 @@ class ReviewProcessingService:
         self.batch_size = batch_size
         logger.info(f"ReviewProcessingService initialized with batch_size={batch_size}")
 
-    async def process_reviews(self) -> Dict:
+    async def process_reviews(self, brand: Optional[str] = None) -> Dict:
         """
         Основний метод обробки відгуків з batch аналізом та паралелізмом
 
@@ -36,8 +36,8 @@ class ReviewProcessingService:
             Dict: Статистика обробки
         """
         # 1. Отримуємо необроблені відгуки
-        logger.info("Fetching unprocessed reviews from DynamoDB...")
-        unprocessed_reviews = await self.db_service.get_unprocessed_reviews()
+        logger.info(f"Fetching unprocessed reviews from DynamoDB{f' for brand: {brand}' if brand else ''}...")
+        unprocessed_reviews = await self.db_service.get_unprocessed_reviews(brand=brand)
 
         if not unprocessed_reviews:
             logger.info("No unprocessed reviews found")
@@ -112,6 +112,7 @@ class ReviewProcessingService:
                     processed_reviews.append(ProcessedReview(
                         id=review.id,
                         source=review.source,
+                        brand=review.brand,  # Додали brand
                         backlink=review.backlink,
                         text=review.text,
                         rating=review.rating,
@@ -133,6 +134,7 @@ class ReviewProcessingService:
                         processed_reviews.append(ProcessedReview(
                             id=news_item.id,
                             source=news_item.source,
+                            brand=news_item.brand,  # Додали brand
                             backlink=news_item.backlink,
                             text=news_item.text,
                             rating=None,  # News не мають rating

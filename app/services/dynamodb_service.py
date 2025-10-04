@@ -39,7 +39,7 @@ class DynamoDBService:
 
         logger.info(f"DynamoDBService initialized for table: {table_name} in region: {region}")
 
-    async def get_unprocessed_reviews(self) -> List[ReviewFromDB]:
+    async def get_unprocessed_reviews(self, brand: Optional[str] = None) -> List[ReviewFromDB]:
         """
         Отримує всі відгуки де is_processed = False
 
@@ -47,11 +47,17 @@ class DynamoDBService:
             List[ReviewFromDB]: Список необроблених відгуків
         """
         try:
-            logger.info("Fetching unprocessed reviews from DynamoDB...")
+            logger.info(f"Fetching unprocessed reviews from DynamoDB{f' for brand: {brand}' if brand else ''}...")
 
             # Scan з фільтром на is_processed = False
+            filter_expression = Attr('is_processed').eq(False)
+            
+            # Додаємо фільтр по бренду якщо вказано
+            if brand:
+                filter_expression = filter_expression & Attr('brand').eq(brand)
+            
             response = self.table.scan(
-                FilterExpression=Attr('is_processed').eq(False)
+                FilterExpression=filter_expression
             )
 
             items = response.get('Items', [])
@@ -60,7 +66,7 @@ class DynamoDBService:
             while 'LastEvaluatedKey' in response:
                 logger.info("Fetching next page of results...")
                 response = self.table.scan(
-                    FilterExpression=Attr('is_processed').eq(False),
+                    FilterExpression=filter_expression,
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 items.extend(response.get('Items', []))

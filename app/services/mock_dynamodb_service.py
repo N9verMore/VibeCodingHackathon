@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import logging
 from datetime import datetime, timedelta
 from app.models import ReviewFromDB, ReviewSource
@@ -18,7 +18,7 @@ class MockDynamoDBService:
         self.processed_ids = set()  # Зберігаємо ID оброблених відгуків
         logger.info(f"MockDynamoDBService initialized (TEST MODE)")
 
-    async def get_unprocessed_reviews(self) -> List[ReviewFromDB]:
+    async def get_unprocessed_reviews(self, brand: Optional[str] = None) -> List[ReviewFromDB]:
         """
         Повертає фейкові необроблені відгуки для тестування
 
@@ -226,6 +226,11 @@ class MockDynamoDBService:
             review for review in mock_reviews
             if review.id not in self.processed_ids
         ]
+        
+        # Фільтруємо по бренду якщо вказано
+        if brand:
+            unprocessed = [review for review in unprocessed if review.brand == brand]
+            logger.info(f"Filtered by brand '{brand}': {len(unprocessed)} reviews")
 
         logger.info(f"Returning {len(unprocessed)} unprocessed mock reviews")
         return unprocessed

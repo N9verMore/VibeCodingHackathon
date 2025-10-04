@@ -1,33 +1,47 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
+from typing import Optional
 from datetime import datetime
 from app.services import ReviewProcessingService
 from app.dependencies import get_processing_service, get_dynamodb_service, get_delivery_service
 from app.services.mock_dynamodb_service import MockDynamoDBService
 from app.services.mock_delivery_service import MockDeliveryService
+from app.models import ProcessReviewsRequest
 
 router = APIRouter()
 
 
 @router.post("/process-reviews")
 async def trigger_review_processing(
+    request: ProcessReviewsRequest,
     background_tasks: BackgroundTasks,
     service: ReviewProcessingService = Depends(get_processing_service)
 ):
     """
     Запустити обробку відгуків у фоновому режимі
+    
+    Request body:
+        {
+            "brand": "TestBrand"
+        }
     """
-    background_tasks.add_task(service.process_reviews)
-    return {"message": "Review processing started"}
+    background_tasks.add_task(service.process_reviews, brand=request.brand)
+    return {"message": f"Review processing started for brand: {request.brand}"}
 
 
 @router.post("/process-reviews-sync")
 async def process_reviews_sync(
+    request: ProcessReviewsRequest,
     service: ReviewProcessingService = Depends(get_processing_service)
 ):
     """
     Синхронна обробка відгуків (для тестування)
+    
+    Request body:
+        {
+            "brand": "TestBrand"
+        }
     """
-    result = await service.process_reviews()
+    result = await service.process_reviews(brand=request.brand)
     return result
 
 
