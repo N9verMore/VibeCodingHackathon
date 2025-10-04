@@ -1,0 +1,927 @@
+{
+  "app": {
+    "id": 6450840109,
+    "title": "Liven: Discover yourself",
+    "developer": "Chesmint limited",
+    "rating": "4.41493",
+    "ratingCount": 25035,
+    "price": "Free",
+    "category": "Health & Fitness",
+    "description": "Liven is your self-discovery companion, a system of tools designed to help you better understand and transform yourself. \n\nWHO’S LIVEN FOR?  \n• For you, me, anyone trying to survive in this hyperstimulated world.    \n• For those under pressure, living to meet others’ expectations, or struggling to say ‘no’.  \n• For those wanting to build a positive self-image, improve focus, or manage time.  \n• For anyone ready to liven up!\n\nAre you ready to take your inner dialogue out of your head and gain a new perspective on life? Because if you are, we’ve got tools to help you observe your experiences and reframe your days. Sounds good?\n\n  \n\nCHECK OUT OUR APPROACH:\n\n• Personalized program\n\nSet a clear, achievable goal—whether it's improving your self-image, saying \"no,\" or challenging negative thoughts. Choose your direction, and we'll help you get there with evidence-based techniques and tools. \n\n• Mood tracker\n\nPause during the day to check in with your emotions. See how you're doing—Good, Bad, Amazing! Use our emotional menu to name your feelings, notice what triggered them, and track changes over time with the Mood Calendar.\n\n• Routine builder\n\nCheck out our Tasks tool to plan new activities and get ideas for things to try each day. By adding new tasks and routines to your days, you can change your behaviour and transform.   \n\n• AI companion\n\nEver wish someone would listen to you rant without judgment, even at 3 a.m.? Meet Livie, our AI companion. If you're tired of the inner dialogue or need a fresh perspective on life, just talk to her. She'll help you break down your situations and suggest new ideas to try.  \n\n• Bite-size knowledge\n\nScientists have studied the human mind for over 100 years, uncovering how our emotions, thoughts, and actions connect to unconscious \"auto-pilot\" behaviors. We've distilled this knowledge into bite-sized insights for you to apply in your decision-making.     \n\n• Well-being tests\n\nEveryone loves quizzes! Take a break and answer a set of questions to define experiences you’re going through. Check back every week to track the changes in emotional and behavioural dynamics.        \n\n• Deep focus soundscapes\n\nWhen you don’t feel like listening to music but still want to wear headphones and block out the world, try our soundscapes.\n\n———————\n\nWHAT OUR USERS ARE SAYING ABOUT US\n\n\"Positive thoughts and a calmer attitude come after 10 minutes of use.\"\n\n\"Great app to use as a guide at the start of your day.\"\n\n\"Liven is helping me turn healthy activities into habits.\"\n\n———————\nSUBSCRIPTION AND TERMS\nAfter you decide to begin your growth with Liven and download the app, you can unlock all features by subscribing to the premium subscription.\nIf you choose to purchase a premium subscription, payment will be charged to your Apple account, and your account will be charged for renewal within 24 hours prior to the end of the current period. Auto-renewal may be turned off at any time by going to your settings in the App Store after purchase.\n\n\nOur app aims to provide you with helpful guidance on mindfulness. However, it is important to note that the information presented in the app is for general purposes only, and should not be considered as a substitute for professional medical care.\n\nLivie is not a substitute for professional advice. It helps you understand your feelings, discover self-care ideas, and manage overwhelming thoughts. Please consult a professional if you need medical advice.\n\nThis app is not intended to diagnose, treat, cure, or prevent any health conditions, and may not be suitable for everyone.\n\nTherefore, we strongly advise that you consult with a healthcare professional before adopting any advice or activities suggested in the app.\nPlease use this app at your discretion, and always keep in mind your own unique needs and circumstances.\n\nPrivacy Policy: https://quiz.theliven.com/en/privacy-policy\nTerms of Service: https://quiz.theliven.com/en/terms-of-use",
+    "appUrl": "https://apps.apple.com/us/app/liven-discover-yourself/id6450840109?uo=4",
+    "iconUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/0f/ea/53/0fea531d-36f6-974f-e34c-0695ca09e041/AppIcon-0-0-1x_U007ephone-0-1-0-0-85-220.jpeg/100x100bb.jpg"
+  },
+  "reviews": [
+    {
+      "author": "katanitaadl20375",
+      "rating": "1",
+      "title": "App would not load",
+      "content": "I paid the 20 dollars for the app, and then when I kept trying to load my personalized plan it would not load at all. I tried downloading the app again and restarting but nothing happened. I ended up deleting the app and my membership so I would not be charged again. Would not recommend.",
+      "date": "2025-10-02T19:08:57-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "amber da rat 😩🦗🦟",
+      "rating": "5",
+      "title": "Today is",
+      "content": "Cried about forgiveness this morning in prayer. Cried about Charlie Kirk. Missed my son. Felt anger and sadness from me and my daughter’s connection. Felt resistant to connect with husband and still wanting divorce.",
+      "date": "2025-10-02T18:15:29-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "Will8119",
+      "rating": "5",
+      "title": "Just started but great",
+      "content": "Great so far",
+      "date": "2025-10-02T17:02:41-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "Chef Edwardito",
+      "rating": "1",
+      "title": "Ed",
+      "content": "Ok",
+      "date": "2025-10-02T16:23:23-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "majkajc",
+      "rating": "3",
+      "title": "Not free",
+      "content": "Just like most other wellness apps, Liven is marketed as free but you have to buy a subscription to get past the introduction.",
+      "date": "2025-10-02T11:29:55-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "Shisanfl",
+      "rating": "5",
+      "title": "On the road to victory",
+      "content": "I’ve been stuck in the mud for a while. To be honest a long time. I need help to be corralled to move forward.",
+      "date": "2025-10-02T09:07:43-07:00",
+      "version": "1.77.0",
+      "country": "us"
+    },
+    {
+      "author": "Nani Olympian",
+      "rating": "5",
+      "title": "Committed",
+      "content": "I am glad I found this app. It guides me through the path I need in my life now",
+      "date": "2025-10-02T08:41:01-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "Indigo’s Ash",
+      "rating": "5",
+      "title": "Good app",
+      "content": "I haven’t used it much yet but I’m hopeful",
+      "date": "2025-10-02T05:09:16-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "Herrera8802",
+      "rating": "5",
+      "title": "Good app",
+      "content": "Gis practique",
+      "date": "2025-10-01T22:01:14-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "Jazzgee10",
+      "rating": "5",
+      "title": "So far so great",
+      "content": "Just started out but loving it",
+      "date": "2025-10-01T19:42:43-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "DrP 314",
+      "rating": "1",
+      "title": "Meh",
+      "content": "I paid, doing the excises, messaged my coach twice, nothing back. Total scam on the coaching part. There’s good info in it but it’s highly repetitive.",
+      "date": "2025-10-01T18:14:26-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "BBQBenson",
+      "rating": "5",
+      "title": "New to this",
+      "content": "I pray it works",
+      "date": "2025-10-01T17:07:36-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "56677667",
+      "rating": "1",
+      "title": "Cost monthly",
+      "content": "Tell me ahead of time that it cost instead of doing a whole test first",
+      "date": "2025-10-01T16:56:56-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "Dihkpix",
+      "rating": "5",
+      "title": "Understanding",
+      "content": "Great app that helps you understand yourself",
+      "date": "2025-10-01T14:36:41-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "MooseMarz",
+      "rating": "5",
+      "title": "Second chance to yourself",
+      "content": "Finding out what triggers you helps stop you from acting out. You are beautiful inside. You just need to love yourself before you love anyone else",
+      "date": "2025-10-01T12:06:17-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Jimenez52",
+      "rating": "5",
+      "title": "Achieving self acceptance and peace",
+      "content": "I really liked this app. it has helped me tremendously. I would have to say and I don’t use that word lightly. I had tried this for a while and because of life, I had to go away for about a week within a week I went back into a place that I didn’t appreciate. So now I’m back and I feel better. I would recommend this app or process to anybody who wants to feel more at home with themselves.",
+      "date": "2025-10-01T10:39:49-07:00",
+      "version": "1.76.2",
+      "country": "us"
+    },
+    {
+      "author": "KellyJean really",
+      "rating": "5",
+      "title": "Me",
+      "content": "So far so good",
+      "date": "2025-09-30T21:17:06-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Jean Paul v03",
+      "rating": "5",
+      "title": "Jean",
+      "content": "Good",
+      "date": "2025-09-30T17:50:47-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "4774mimi",
+      "rating": "5",
+      "title": "Un día a la vez",
+      "content": "4774",
+      "date": "2025-09-30T13:45:41-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "nutsack 9000",
+      "rating": "4",
+      "title": "Getting started",
+      "content": "Hopefully this works",
+      "date": "2025-09-30T12:34:11-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Breebitchess",
+      "rating": "4",
+      "title": "Good resource",
+      "content": "I just started using this app and so far it’s been a very good experience using. Definitely recommend.",
+      "date": "2025-09-30T11:07:07-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Marisha1936363728",
+      "rating": "1",
+      "title": "Scam",
+      "content": "They overcharge you and the app would not open! O was charged $89.99, then 35.99, then $19.9",
+      "date": "2025-09-30T11:02:50-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "CINCOLOR",
+      "rating": "3",
+      "title": "Just started",
+      "content": "It was easy to get login",
+      "date": "2025-09-30T10:54:46-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Ezbrz91",
+      "rating": "5",
+      "title": "Great parenting support!",
+      "content": "Recommend for any parent just wanting to build a better connection with their children.",
+      "date": "2025-09-30T10:03:01-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Life literally",
+      "rating": "5",
+      "title": "Help",
+      "content": "So far so good",
+      "date": "2025-09-30T07:17:31-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "kek4848",
+      "rating": "1",
+      "title": "Useless",
+      "content": "This app is useless unless you pay additional money for multiple upgrades",
+      "date": "2025-09-30T05:16:54-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Yanethsh",
+      "rating": "5",
+      "title": "Me encanta",
+      "content": "Es muy buena valió la pena pagarlo",
+      "date": "2025-09-29T19:56:22-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "JDel427",
+      "rating": "1",
+      "title": "Fake ratings",
+      "content": "This app is horrible and I’ll take partial blame by not realizing all of the upselling they try to do at checkout. They try selling multiple add ons and even hit you with the “final offer, 50% off of this/that”. Once you download the app, no notifications reminding you. No help with the app. Says to journal stuff each day? I could write in my notes just fine. Has sounds that do not help with sleep or focus. Just a whole bunch of lies on this app. If you fell for it, be sure to search subscriptions and turn off auto renew. Horrible app, horrible company.",
+      "date": "2025-09-29T18:47:51-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Beeka24242424",
+      "rating": "5",
+      "title": "So far…it’s good!",
+      "content": "First day using this app and it has made me start thinking more positively about myself",
+      "date": "2025-09-29T17:38:12-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Halo6001",
+      "rating": "5",
+      "title": "Hope",
+      "content": "I’ve just started but I’ve heard the best",
+      "date": "2025-09-29T13:46:27-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "mela2360",
+      "rating": "3",
+      "title": "Day 1",
+      "content": "Unsure what this will do for me",
+      "date": "2025-09-29T10:29:58-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "VitBur",
+      "rating": "1",
+      "title": "Not helpful",
+      "content": "I didn’t need to pay for an app to read about how procrastination works. It was marketed as a tool to help. Ended up just being chapters of reading. This information already exists for free online",
+      "date": "2025-09-29T05:52:24-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Cheree69",
+      "rating": "5",
+      "title": "Mrs",
+      "content": "Just starting this process but the app seems to be pretty accurate assessing my needs. I look forward to the journey.",
+      "date": "2025-09-29T05:10:25-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "NaenaeDuke",
+      "rating": "4",
+      "title": "Hoping to improve my concentration",
+      "content": "Just getting started",
+      "date": "2025-09-29T05:08:13-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Lightning LCD",
+      "rating": "5",
+      "title": "This Moment is Good enough",
+      "content": "My focus this morning is good as it ever been!",
+      "date": "2025-09-29T04:09:55-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "iDash",
+      "rating": "5",
+      "title": "Just started",
+      "content": "Let the healing begin.",
+      "date": "2025-09-28T22:43:01-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "JoliCarrie",
+      "rating": "5",
+      "title": "Great app",
+      "content": "This app has helped me improve my ADHD",
+      "date": "2025-09-28T22:05:28-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "TravelerGirlMe",
+      "rating": "5",
+      "title": "Nice App",
+      "content": "My first few minutes were ok.",
+      "date": "2025-09-28T20:16:43-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "MatthewS_SanDiego",
+      "rating": "5",
+      "title": "Self help",
+      "content": "I like this app so far, I need all the help I can get",
+      "date": "2025-09-28T18:32:28-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Happygolf1276",
+      "rating": "4",
+      "title": "jvl0213",
+      "content": "Jay",
+      "date": "2025-09-28T17:21:33-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "superbeto2.0",
+      "rating": "5",
+      "title": "Estoy empezando, solo espero que esto me ayude",
+      "content": "Es mi primer día ojalá funcione",
+      "date": "2025-09-28T11:29:52-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Burke0907",
+      "rating": "5",
+      "title": "Beginning",
+      "content": "The intro is very inviting and warm",
+      "date": "2025-09-28T09:11:44-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "P. Thoughts",
+      "rating": "5",
+      "title": "It’s free so far lol",
+      "content": "We’ll see how it pans out",
+      "date": "2025-09-28T06:44:34-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "KRich2k",
+      "rating": "5",
+      "title": "Amazing techniques & technology",
+      "content": "Liven has great techniques and the technology makes it so simple to include in your daily routine! Excellent. Highly recommend",
+      "date": "2025-09-28T04:38:37-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Sam Liven",
+      "rating": "5",
+      "title": "Liven",
+      "content": "Liven",
+      "date": "2025-09-27T20:02:36-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "ashmarie214",
+      "rating": "5",
+      "title": "Time for growth",
+      "content": "So far it’s amazing! Intrigued to see where this takes me in self discovery.",
+      "date": "2025-09-27T18:48:21-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "dckid70",
+      "rating": "5",
+      "title": "Great App",
+      "content": "This is a very well thought out experience to help with life’s struggles!",
+      "date": "2025-09-27T16:00:22-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "EnzoKID09",
+      "rating": "5",
+      "title": "buena",
+      "content": "buena",
+      "date": "2025-09-27T10:29:21-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "cmk221723",
+      "rating": "5",
+      "title": "Great App",
+      "content": "As someone who works in Mental health and has their own struggles, this app is great. It doesn’t replace a good therapist but it is great on psychoeducation and temporary support. Great mood tracker. The AI feature I was suspicious about it but seems to work great especially in helping with coping strategies when you aren’t thinking clearly. Highly recommend and will be recommending to clients.",
+      "date": "2025-09-27T09:13:21-07:00",
+      "version": "1.76.1",
+      "country": "us"
+    },
+    {
+      "author": "Andrzejek1976",
+      "rating": "1",
+      "title": "Not worth it",
+      "content": "The app is boring! I love to read but if I wanted to just read I’d buy a help book. It’s not at all inspiring or helpful. I’ve spent £89 on something I will no longer use.",
+      "date": "2025-10-01T12:47:26-07:00",
+      "version": "1.76.2",
+      "country": "gb"
+    },
+    {
+      "author": "3duPad",
+      "rating": "4",
+      "title": "Iwonka Story",
+      "content": "Iwona Story",
+      "date": "2025-10-01T03:22:01-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": ")p.a.r.k.y(",
+      "rating": "1",
+      "title": "Useless content, money trap",
+      "content": "First of all the content is fairly useless to me. Knowing *what* I need to do isn’t the problem, knowing *how* to do it is. This app does not help with that at all. \nSecondly the funding model is designed in such a way as to prey on the characteristics of the neurodiverse people the app is marketed to.\nFolks with ADHD will sign up to this app and then forget to cancel before being hit with huge monthly fees. It feels like a scam.",
+      "date": "2025-10-01T00:15:05-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "AdamJ (UK)",
+      "rating": "1",
+      "title": "Pricey subscription and dubious mention of OpenAI in privacy policy",
+      "content": "You open the app and you’re guided through a long and well constructed questionnaire style self assessment. Then when you’re finished it gives you an insight about your answers and asks you to subscribe for £7.99 a WEEK",
+      "date": "2025-09-30T10:31:33-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "woody2626",
+      "rating": "5",
+      "title": "Help",
+      "content": "Help",
+      "date": "2025-09-29T22:23:05-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "mr_D13",
+      "rating": "5",
+      "title": "Rio",
+      "content": "Cool",
+      "date": "2025-09-29T05:07:13-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "Isleofwighter",
+      "rating": "1",
+      "title": "Reoccurring bill",
+      "content": "I have cancelled this subscription months ago, but they continue to take transactions of 49.99 multiple times a month!",
+      "date": "2025-09-28T08:07:33-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "Shellye_e",
+      "rating": "1",
+      "title": "‼️Misleading Subscription – Be Careful‼️",
+      "content": "The app itself may work fine, but the subscription model is like a trap. I trialed it without realizing I’d be rolled into a £49.99 monthly plan — almost £600 a year — when the same app costs just £59.99 annually. I was charged over £460 for something I never used, while other customers pay a fraction of that.\n\nThe terms are hidden in small print, and from the number of similar reviews, I’m clearly not the only one caught out. Please make this clearer and stop setting customers up to fail.\n\nThis feels like stealing from unsuspecting customers and gives me that feeling that this is a semi scam company! BEWARE!!",
+      "date": "2025-09-28T04:59:40-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "Hello98_",
+      "rating": "1",
+      "title": "Subs",
+      "content": "Even though I love the app, I’m not able to cancel the subscription due to budget constraints",
+      "date": "2025-09-27T03:10:59-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "Rossco79bobby",
+      "rating": "5",
+      "title": "Mr",
+      "content": "Ross",
+      "date": "2025-09-25T08:28:31-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "JoJoByf333",
+      "rating": "2",
+      "title": "Making anxiety worse for some people…",
+      "content": "Seems like a great app! A lot of people are struggling financially which is generating stress, anxiety etc.\n\nTo be then told there’s this amazing app… but there’s no basic free version is like a kick in the teeth (plus they don’t tell you until the end of the whole survey). \n\n£8 per week is a large amount for some people genuinely struggling.",
+      "date": "2025-09-25T01:27:52-07:00",
+      "version": "1.76.1",
+      "country": "gb"
+    },
+    {
+      "author": "coolgirl🍃",
+      "rating": "5",
+      "title": "Liven app 💞",
+      "content": "rlly rlly good app like how it asks lots of good questions and it helps with all my issues xx",
+      "date": "2025-09-24T06:44:07-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "surfer1962",
+      "rating": "5",
+      "title": "Paul",
+      "content": "Very helpful",
+      "date": "2025-09-24T06:05:39-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "User KTS",
+      "rating": "1",
+      "title": "Accent",
+      "content": "Can the accent sound English and less like a robot? It’s not captivating and sounds very condescending. Disappointed with first insights.",
+      "date": "2025-09-24T01:44:00-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "wireunited",
+      "rating": "3",
+      "title": "Phil",
+      "content": "t",
+      "date": "2025-09-22T11:46:16-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "MrSmith0011",
+      "rating": "1",
+      "title": "Watch out for Auto Renewal",
+      "content": "I wasn’t using this app at all. I forgot I’d even installed it until a few months later when I was hit with an auto renewal charge of £99.\n\nI saw it pending in my bank and even contacted my bank about it as if completely forgot I’d even installed this app.\n\nI had no email, no notifications from the app telling me I was going to be charged. Absolutely nothing. \n\nI’m writing this review as I don’t want others to fall victim to this!",
+      "date": "2025-09-22T04:10:18-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "Enenu E",
+      "rating": "4",
+      "title": "Just new",
+      "content": "Can’t say much till I am done",
+      "date": "2025-09-20T06:27:50-07:00",
+      "version": "1.76.0",
+      "country": "gb"
+    },
+    {
+      "author": "nobjockey77",
+      "rating": "1",
+      "title": "Huge Rip-Off",
+      "content": "Joined from Instagram, charged £19.99,  suddenly there’s another £49.99 gone and then again a month later - I never signed for that! I signed for a trial, for £19.99, for a month. Sneaky thieving bunch. Useless App too - just a glorified notepad for writing down feelings. Teaches you basic kids grade level CBT too. AVOID AVOID AVOID",
+      "date": "2025-09-19T06:53:14-07:00",
+      "version": "1.75.4",
+      "country": "gb"
+    },
+    {
+      "author": "Orence1966",
+      "rating": "5",
+      "title": "Amazing service team",
+      "content": "I was investigating and trialling this app and accidentally went all the way through the purchase process to see what the total costs were. The support team could not have been more helpful in return returning my subscription they were super responsive and quick and no questions asked. I think what these guys are trying to do is brilliant and it looks like it’s helping millions of people around the world with a very serious problem.Could not recommend them all the app highly enough it’s brilliant.",
+      "date": "2025-09-19T04:50:09-07:00",
+      "version": "1.75.4",
+      "country": "gb"
+    },
+    {
+      "author": "beserkersideways",
+      "rating": "5",
+      "title": "Self Help",
+      "content": "Easy to use and helpful. You’ll get out of this what you put in",
+      "date": "2025-09-18T01:16:07-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "The revival!",
+      "rating": "5",
+      "title": "Mr",
+      "content": "This is exactly what I was looking for: something that I can do do at my own pace, in my own time, and as much I can do.",
+      "date": "2025-09-17T19:40:46-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "ploppyhead",
+      "rating": "5",
+      "title": "Great",
+      "content": "Great",
+      "date": "2025-09-17T12:35:46-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Nord vpn nightmare",
+      "rating": "4",
+      "title": "READ THE SMALL PRINT",
+      "content": "Just be careful with the 7 day ‘ plan’ , it has an automatic subscription- which they did give me a refund, but it’s all on a subscription base. Even if you only pay for 7’days ..",
+      "date": "2025-09-17T10:28:32-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Bighandzbigfeet",
+      "rating": "5",
+      "title": "I’m new but excited",
+      "content": "I’m just now starting my plan but the app has so far inspired confidence. The set up process is easy but also quite detailed so I’m hopeful that it will prove useful moving forward. Best of luck to all of you starting your journey also.",
+      "date": "2025-09-17T04:26:15-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "ALJ81",
+      "rating": "1",
+      "title": "Such a scam",
+      "content": "The app itself is good but be aware you will charged for 2 subscriptions every month which costs £80 ( every month ) after a weeks trial period. Such a scam. I wish I could leave no stars.",
+      "date": "2025-09-16T04:20:38-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Lee_Thomas",
+      "rating": "3",
+      "title": "Day 1",
+      "content": "Not much to say so far. Let’s see how is goes",
+      "date": "2025-09-16T03:59:35-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Lori Swailes",
+      "rating": "5",
+      "title": "Lorraine",
+      "content": "Excellent",
+      "date": "2025-09-14T23:32:46-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Nurgule",
+      "rating": "5",
+      "title": "Excellent",
+      "content": "Struggling with procrastination ? \nThis means that you need help with your mental health. \nThis App. Liven helps you to identify deep seated problems causing this.",
+      "date": "2025-09-14T20:29:52-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "dph74",
+      "rating": "3",
+      "title": "S'okay...",
+      "content": "There's lots to like about this App & its content, but it's all a bit saccharine sweet, particularly so in the long, detailed reply to these user Comments. I'm sure it's all done with integrity & care, but after my 3 month discounted trial, I hope I'll have ingrained habits that will allow me to return to Vita Minds material from the NHS. That material just seems more real & rich TBH. Thaks anyhow - I'll save giving hundreds of pounds to a few people at the top raking in the profits for unchanging content. No need to Reply!",
+      "date": "2025-09-13T22:54:24-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Libhan",
+      "rating": "5",
+      "title": "Mrs",
+      "content": "A good start",
+      "date": "2025-09-13T11:20:39-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Autumn.2025",
+      "rating": "3",
+      "title": "Newbie",
+      "content": "Looking forward to feeling good in myself especially as the dark nights are coming in",
+      "date": "2025-09-13T04:31:23-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "btwents",
+      "rating": "1",
+      "title": "Buy a book instead",
+      "content": "Not well thought out, no real structure.",
+      "date": "2025-09-13T02:14:38-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "Craig26p",
+      "rating": "1",
+      "title": "More money in the marketing",
+      "content": "No real benefit from the app thst you can’t get from other free resources. Huge marketing budget paid for by subscription model",
+      "date": "2025-09-12T11:51:21-07:00",
+      "version": "1.75.3",
+      "country": "gb"
+    },
+    {
+      "author": "se23pat",
+      "rating": "5",
+      "title": "CBT make simple",
+      "content": "This is a lovely helpful app",
+      "date": "2025-09-12T10:25:21-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "Claireheidi",
+      "rating": "5",
+      "title": "Kind",
+      "content": "Caring and healing",
+      "date": "2025-09-12T01:40:52-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "KtT79",
+      "rating": "1",
+      "title": "Automatic subscription renewal…??!!",
+      "content": "Turn it off before they auto deduct any payments. Challenge it with the payment provider if needed! \nFound the app clunky and incredibly poorly worded. \nWill not be continuing any subscription service with this app.",
+      "date": "2025-09-12T00:11:32-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "dont download !!!",
+      "rating": "3",
+      "title": "Me",
+      "content": "Me",
+      "date": "2025-09-11T20:01:31-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "wizzywig56",
+      "rating": "5",
+      "title": "Mandy",
+      "content": "Excellent app well done",
+      "date": "2025-09-11T11:05:57-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "Nikki Evo",
+      "rating": "1",
+      "title": "Keeps charging despite me cancelling",
+      "content": "I have tried through emails and the app to cancel after the free trial yet I am charge £49.99 constantly and still today!!! And no refund or response",
+      "date": "2025-09-11T02:05:28-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "Dave148264",
+      "rating": "1",
+      "title": "£50 a month for nothing!!",
+      "content": "Shocking app that doesn’t do anything - charged me £20 and then £50 - even though I had got rid of the app and tried to cancel!!",
+      "date": "2025-09-11T01:35:05-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "dph74",
+      "rating": "3",
+      "title": "S'okay",
+      "content": "S'asking me to rate it 5* when I've been on it only 5 mins... maybe it's the App that needs CBT & Liven?!",
+      "date": "2025-09-10T22:40:54-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "TheMind4",
+      "rating": "5",
+      "title": "Free",
+      "content": "Finally a great free app !",
+      "date": "2025-09-10T07:41:59-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "Kate 175",
+      "rating": "5",
+      "title": "Great app",
+      "content": "Very positive and encouraging to help you commit to a better version of yourself",
+      "date": "2025-09-10T05:28:53-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "Nt wizard",
+      "rating": "1",
+      "title": "Terrible avoid",
+      "content": "I found the exercises pointless and poorly written.  Then they automatically took money off me after I stopped using the app.  AVOID",
+      "date": "2025-09-10T01:08:22-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "R0SIE241",
+      "rating": "4",
+      "title": "Review",
+      "content": "Just new to the app",
+      "date": "2025-09-09T09:26:37-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "KFNG3",
+      "rating": "5",
+      "title": "Really helpful",
+      "content": "Very informative and explained in an easy to understand way",
+      "date": "2025-09-09T04:12:20-07:00",
+      "version": "1.75.2",
+      "country": "gb"
+    },
+    {
+      "author": "dementiadoctor review",
+      "rating": "1",
+      "title": "Don’t do it!",
+      "content": "I signed up for a trial which I cancelled repeatedly. They are taking £90 a month from me and won’t answer my emails",
+      "date": "2025-09-08T12:45:09-07:00",
+      "version": "1.75.1",
+      "country": "gb"
+    },
+    {
+      "author": "Yor Nuz",
+      "rating": "5",
+      "title": "So far so good",
+      "content": "First day of inner peace",
+      "date": "2025-09-08T06:11:41-07:00",
+      "version": "1.75.1",
+      "country": "gb"
+    },
+    {
+      "author": "donut lover 124",
+      "rating": "2",
+      "title": "Too wordy",
+      "content": "To actually use this app you need to read A LOT which is not what I was expecting. The apps design is very good quality but I feel it needs to improve its way of communicating with the user more, like using more of an easier time efficient way of showing how to become a better person instead of you needing to read a whole essay just to understand 1 thing.",
+      "date": "2025-09-08T04:44:38-07:00",
+      "version": "1.75.0",
+      "country": "gb"
+    },
+    {
+      "author": "Mickael st-martin 74",
+      "rating": "1",
+      "title": "No Notification useless",
+      "content": "Paid so much n I never use it",
+      "date": "2025-09-30T07:21:00-07:00",
+      "version": "1.76.1",
+      "country": "ca"
+    },
+    {
+      "author": "Egyptian Queen1",
+      "rating": "5",
+      "title": "Timing",
+      "content": "Came along when I really needed something. Just started but I hope I can stick with it.",
+      "date": "2025-09-29T19:21:07-07:00",
+      "version": "1.76.1",
+      "country": "ca"
+    }
+  ],
+  "exportInfo": {
+    "totalReviewsFound": 147,
+    "exportedReviews": 100,
+    "targetReviews": 100,
+    "exportDate": "2025-10-04T11:05:13.557Z",
+    "countriesChecked": [
+      "us",
+      "gb",
+      "ca"
+    ]
+  }
+}
