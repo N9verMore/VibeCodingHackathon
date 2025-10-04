@@ -26,10 +26,12 @@ def get_dynamodb_service() -> DynamoDBService:
             region=settings.aws_region
         )
 
-    # Повертаємо реальний сервіс
+    # Повертаємо реальний сервіс з credentials
     return DynamoDBService(
         table_name=settings.dynamodb_table_name,
-        region=settings.aws_region
+        region=settings.aws_region,
+        aws_access_key_id=settings.aws_access_key_id or None,
+        aws_secret_access_key=settings.aws_secret_access_key or None
     )
 
 
@@ -51,20 +53,29 @@ def get_delivery_service() -> DeliveryService:
     Використовує MockDeliveryService якщо USE_MOCK_DELIVERY=true в .env
     """
     settings = get_settings()
+    db_service = get_dynamodb_service()
 
     # Перевіряємо чи використовувати mock
     if getattr(settings, 'use_mock_delivery', True):
-        return MockDeliveryService(endpoint=settings.deliver_endpoint)
+        return MockDeliveryService(
+            endpoint=settings.deliver_endpoint,
+            db_service=db_service
+        )
 
     # Повертаємо реальний сервіс
-    return DeliveryService(endpoint=settings.deliver_endpoint)
+    return DeliveryService(
+        endpoint=settings.deliver_endpoint,
+        db_service=db_service
+    )
 
 
 @lru_cache()
 def get_processing_service() -> ReviewProcessingService:
     """Dependency для Processing сервісу"""
+    settings = get_settings()
     return ReviewProcessingService(
         db_service=get_dynamodb_service(),
         openai_service=get_openai_service(),
-        delivery_service=get_delivery_service()
+        delivery_service=get_delivery_service(),
+        batch_size=settings.batch_size
     )

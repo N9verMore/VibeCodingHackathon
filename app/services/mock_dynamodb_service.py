@@ -36,7 +36,7 @@ class MockDynamoDBService:
                 source=ReviewSource.appstore,
                 backlink="https://apps.apple.com/review/001",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Чудовий додаток!",
                 text="Користуюся вже місяць, все працює відмінно. Інтерфейс зручний, швидко завантажується. Особливо подобається функція автоматичного збереження.",
@@ -55,7 +55,7 @@ class MockDynamoDBService:
                 source=ReviewSource.googleplay,
                 backlink="https://play.google.com/review/002",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Не можу оплатити підписку",
                 text="Намагаюся оплатити преміум підписку, але постійно вилітає помилка. Підтримка не відповідає вже 3 дні. Дуже розчарований.",
@@ -74,7 +74,7 @@ class MockDynamoDBService:
                 source=ReviewSource.trustpilot,
                 backlink="https://trustpilot.com/review/003",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="testbrand-business-unit",
                 title="Нормально, але є над чим працювати",
                 text="Загалом додаток робочий. Є деякі баги, наприклад іноді не синхронізуються дані. Але в цілому функціонал задовольняє базові потреби.",
@@ -93,7 +93,7 @@ class MockDynamoDBService:
                 source=ReviewSource.appstore,
                 backlink="https://apps.apple.com/review/004",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Незрозумілий інтерфейс",
                 text="Після останнього оновлення все переплуталось. Не можу знайти де налаштування. Кнопки маленькі, важко натискати на телефоні. Верніть стару версію!",
@@ -112,7 +112,7 @@ class MockDynamoDBService:
                 source=ReviewSource.googleplay,
                 backlink="https://play.google.com/review/005",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Швидко і стабільно",
                 text="Оновлення дійсно покращило швидкість роботи. Тепер все летить! Навіть на старому телефоні працює без лагів. Молодці розробники!",
@@ -131,7 +131,7 @@ class MockDynamoDBService:
                 source=ReviewSource.trustpilot,
                 backlink="https://trustpilot.com/review/006",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="testbrand-business-unit",
                 title="Жахлива підтримка",
                 text="Написав в підтримку тиждень тому - досі ніякої відповіді. В чаті бот, який не розуміє питання. Телефону немає. Як з вами зв'язатись???",
@@ -150,7 +150,7 @@ class MockDynamoDBService:
                 source=ReviewSource.appstore,
                 backlink="https://apps.apple.com/review/007",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Всі функції що потрібно",
                 text="Нарешті додаток, в якому є все необхідне. Особливо круто що додали експорт в PDF та інтеграцію з Google Calendar. Рекомендую всім!",
@@ -169,7 +169,7 @@ class MockDynamoDBService:
                 source=ReviewSource.googleplay,
                 backlink="https://play.google.com/review/008",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Є плюси і мінуси",
                 text="Функціонал хороший, але ціна підписки завищена. За такі гроші можна було б додати більше можливостей. Ще іноді реклама показується навіть в преміум версії.",
@@ -188,7 +188,7 @@ class MockDynamoDBService:
                 source=ReviewSource.appstore,
                 backlink="https://apps.apple.com/review/009",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Great app!",
                 text="Love the new design and features. Very intuitive and user-friendly. Customer support is also very responsive and helpful. Keep up the good work!",
@@ -207,7 +207,7 @@ class MockDynamoDBService:
                 source=ReviewSource.googleplay,
                 backlink="https://play.google.com/review/010",
                 brand="TestBrand",
-                isProcessed=False,
+                is_processed=False,
                 app_identifier="com.testbrand.app",
                 title="Crashes all the time",
                 text="App keeps crashing every time I try to save my work. Lost important data twice already. This is unacceptable. Please fix these bugs ASAP!",
@@ -230,18 +230,20 @@ class MockDynamoDBService:
         logger.info(f"Returning {len(unprocessed)} unprocessed mock reviews")
         return unprocessed
 
-    async def mark_as_processed(self, review_id: str) -> bool:
+    async def mark_as_processed(self, source: str, review_id: str) -> bool:
         """
         Позначає відгук як оброблений (додає в set)
 
         Args:
+            source: Джерело відгуку
             review_id: ID відгуку
 
         Returns:
             bool: True якщо успішно
         """
+        # Зберігаємо просто review_id, бо у mock даних id унікальні
         self.processed_ids.add(review_id)
-        logger.info(f"Mock: Marked review {review_id} as processed")
+        logger.info(f"Mock: Marked review {source}#{review_id} as processed")
         return True
 
     def reset_processed(self):

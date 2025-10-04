@@ -18,16 +18,18 @@ class ReviewProcessingService:
             self,
             db_service: DynamoDBService,
             openai_service: OpenAIService,
-            delivery_service: DeliveryService
+            delivery_service: DeliveryService,
+            batch_size: int = 10
     ):
         self.db_service = db_service
         self.openai_service = openai_service
         self.delivery_service = delivery_service
-        logger.info("ReviewProcessingService initialized")
+        self.batch_size = batch_size
+        logger.info(f"ReviewProcessingService initialized with batch_size={batch_size}")
 
     async def process_reviews(self) -> Dict:
         """
-        Основний метод обробки відгуків
+        Основний метод обробки відгуків з батч-доставкою
 
         Returns:
             Dict: Статистика обробки
@@ -42,12 +44,15 @@ class ReviewProcessingService:
 
         logger.info(f"Found {len(unprocessed_reviews)} unprocessed reviews")
 
-        # 2. Обробляємо кожен відгук через OpenAI
+        # 2. Обробляємо кожен відгук через OpenAI + батч-доставка
         processed_reviews = []
+        current_batch = []
+        total_processed = 0
+        total_delivered = 0
 
-        for review in unprocessed_reviews:
+        for idx, review in enumerate(unprocessed_reviews, start=1):
             try:
-                logger.info(f"Processing review {review.id}...")
+                logger.info(f"Processing review {review.id} ({idx}/{len(unprocessed_reviews)})...")
 
                 # Аналіз через LLM
                 analysis = await self.openai_service.analyze_review(review)
@@ -63,25 +68,41 @@ class ReviewProcessingService:
                     sentiment=analysis.sentiment,
                     description=analysis.description,
                     category=analysis.category,
-                    isProcessed=True
+                    is_processed=True
                 )
 
+                current_batch.append(processed_review)
                 processed_reviews.append(processed_review)
+                total_processed += 1
 
                 # Оновлюємо статус в БД
-                await self.db_service.mark_as_processed(review.id)
+                await self.db_service.mark_as_processed(review.source, review.id)
                 logger.info(f"Review {review.id} processed successfully")
+
+                # Перевіряємо чи заповнився батч
+                if len(current_batch) >= self.batch_size:
+                    logger.info(f"Batch of {len(current_batch)} reviews ready, delivering...")
+                    await self.delivery_service.deliver_processed_reviews(current_batch)
+                    total_delivered += len(current_batch)
+                    logger.info(f"Batch delivered successfully ({total_delivered}/{total_processed} delivered so far)")
+                    current_batch = []  # Очищаємо батч
 
             except Exception as e:
                 logger.error(f"Failed to process review {review.id}: {str(e)}")
                 continue
 
-        # 3. Відправляємо оброблені відгуки
-        if processed_reviews:
-            await self.delivery_service.deliver_processed_reviews(processed_reviews)
+        # 3. Відправляємо залишок (якщо є неповний батч)
+        if current_batch:
+            logger.info(f"Delivering final batch of {len(current_batch)} reviews...")
+            await self.delivery_service.deliver_processed_reviews(current_batch)
+            total_delivered += len(current_batch)
+            logger.info(f"Final batch delivered ({total_delivered} total delivered)")
 
         return {
-            "processed": len(processed_reviews),
+            "processed": total_processed,
+            "delivered": total_delivered,
             "total": len(unprocessed_reviews),
-            "message": f"Successfully processed {len(processed_reviews)} out of {len(unprocessed_reviews)} reviews"
+            "batch_size": self.batch_size,
+            "batches_sent": (total_delivered + self.batch_size - 1) // self.batch_size,  # ceiling division
+            "message": f"Successfully processed {total_processed} out of {len(unprocessed_reviews)} reviews, delivered in batches of {self.batch_size}"
         }

@@ -60,6 +60,35 @@ async def get_mock_db_stats(
         return {"error": "This endpoint only works with MockDynamoDBService"}
 
 
+# ==================== DYNAMODB ENDPOINTS ====================
+
+@router.get("/db/stats")
+async def get_db_stats(
+    db_service = Depends(get_dynamodb_service)
+):
+    """
+    Отримати статистику з DynamoDB
+    """
+    stats = await db_service.get_stats()
+    return stats
+
+
+@router.get("/db/review/{source}/{review_id}")
+async def get_review_by_id(
+    source: str,
+    review_id: str,
+    db_service = Depends(get_dynamodb_service)
+):
+    """
+    Отримати конкретний відгук за ID
+    Приклад: /db/review/appstore/544007664
+    """
+    review = await db_service.get_review_by_id(source, review_id)
+    if review is None:
+        return {"error": f"Review {source}#{review_id} not found"}
+    return review.model_dump(mode='json')
+
+
 # ==================== MOCK DELIVERY ENDPOINTS ====================
 
 @router.get("/mock/delivery/stats")
@@ -130,8 +159,12 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "processing": {
-                "POST /process-reviews": "Запустити обробку відгуків (асинхронно)",
-                "POST /process-reviews-sync": "Запустити обробку відгуків (синхронно)"
+                "POST /process-reviews": "Запустити обробку відгуків (асинхронно, батчами по 10)",
+                "POST /process-reviews-sync": "Запустити обробку відгуків (синхронно, батчами по 10)"
+            },
+            "database": {
+                "GET /db/stats": "Статистика DynamoDB (processed/unprocessed)",
+                "GET /db/review/{source}/{review_id}": "Отримати конкретний відгук за ID (приклад: /db/review/appstore/544007664)"
             },
             "mock_db": {
                 "POST /mock/db/reset": "Скинути оброблені mock відгуки",

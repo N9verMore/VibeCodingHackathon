@@ -35,10 +35,10 @@ class DeliveryService:
                     timeout=30.0
                 )
                 response.raise_for_status()
-                logger.info(f"Successfully delivered {len(reviews)} processed reviews")
+                logger.info(f"Successfully delivered {len(reviews)} processed reviews via HTTP")
                 return True
             except Exception as e:
-                logger.error(f"Failed to deliver reviews: {str(e)}")
+                logger.error(f"Failed to deliver reviews via HTTP: {str(e)}")
                 raise HTTPException(
                     status_code=500,
                     detail=f"Delivery failed: {str(e)}"

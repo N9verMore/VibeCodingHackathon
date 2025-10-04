@@ -13,7 +13,7 @@ class ReviewFromDB(BaseModel):
     source: ReviewSource
     backlink: str
     brand: str
-    isProcessed: bool
+    is_processed: bool
     app_identifier: str
     title: Optional[str] = None
     text: Optional[str] = None
@@ -44,4 +44,4 @@ class ProcessedReview(BaseModel):
     sentiment: Sentiment
     description: str
     category: str
-    isProcessed: bool = True
+    is_processed: bool = True

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     """Налаштування застосунку"""
 
     # OpenAI
-    openai_api_key: str = ""
+    openai_api_key: str
     openai_model: str = "gpt-4o-mini"
 
     # Delivery
@@ -16,13 +16,13 @@ class Settings(BaseSettings):
     batch_size: int = 10
 
     # Database Mode
-    use_mock_db: bool = True  # True = використовувати mock дані, False = реальна БД
+    use_mock_db: bool = False  # True = використовувати mock дані, False = реальна БД
     use_mock_delivery: bool = True  # True = виводить у консоль, False = відправляє HTTP
 
     # DynamoDB (для teammate)
-    aws_region: str = "eu-central-1"
-    dynamodb_table_name: str = "reviews"
-    aws_access_key_id: str = "JbjxqraLKU+s9NnbY8bJsuCt5I8yPvLucXmyXHMV"
+    aws_region: str = "us-east-1"
+    dynamodb_table_name: str = "ReviewsTableV2"
+    aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
 
     class Config:
