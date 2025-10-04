@@ -7,7 +7,6 @@ import asyncio
 import sys
 from app.api import router
 from app.config import get_settings
-from app.dependencies import get_postgres_service
 
 # Налаштування event loop для Windows (для psycopg)
 if sys.platform == 'win32':
@@ -28,15 +27,6 @@ app = FastAPI(
 
 # Підключення роутів
 app.include_router(router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Ініціалізація при старті"""
-    logging.info("Initializing PostgreSQL database...")
-    postgres_service = get_postgres_service()
-    await postgres_service.init_db()
-    logging.info("PostgreSQL database initialized")
 
 
 if __name__ == "__main__":

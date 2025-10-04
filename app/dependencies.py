@@ -4,8 +4,7 @@ from app.services import (
     DynamoDBService,
     OpenAIService,
     DeliveryService,
-    ReviewProcessingService,
-    PostgresService
+    ReviewProcessingService
 )
 from app.services.mock_dynamodb_service import MockDynamoDBService
 from app.services.mock_delivery_service import MockDeliveryService
@@ -68,13 +67,6 @@ def get_delivery_service() -> DeliveryService:
 
 
 @lru_cache()
-def get_postgres_service() -> PostgresService:
-    """Dependency для PostgreSQL сервісу"""
-    settings = get_settings()
-    return PostgresService(database_url=settings.postgres_url)
-
-
-@lru_cache()
 def get_processing_service() -> ReviewProcessingService:
     """Dependency для Processing сервісу"""
     settings = get_settings()
@@ -82,6 +74,5 @@ def get_processing_service() -> ReviewProcessingService:
         db_service=get_dynamodb_service(),
         openai_service=get_openai_service(),
         delivery_service=get_delivery_service(),
-        postgres_service=get_postgres_service(),
         batch_size=settings.batch_size
     )

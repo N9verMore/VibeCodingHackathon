@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 from datetime import datetime
 from app.services import ReviewProcessingService
-from app.dependencies import get_processing_service, get_dynamodb_service, get_delivery_service, get_postgres_service
+from app.dependencies import get_processing_service, get_dynamodb_service, get_delivery_service
 from app.services.mock_dynamodb_service import MockDynamoDBService
 from app.services.mock_delivery_service import MockDeliveryService
 
@@ -135,15 +135,6 @@ async def reset_mock_delivery(
 
 
 # ==================== GENERAL ENDPOINTS ====================
-
-@router.get("/postgres/stats")
-async def get_postgres_stats(
-    postgres_service = Depends(get_postgres_service)
-):
-    """Отримати статистику PostgreSQL"""
-    stats = await postgres_service.get_stats()
-    return stats
-
 
 @router.get("/health")
 async def health_check(
