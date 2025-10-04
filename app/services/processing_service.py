@@ -5,9 +5,10 @@ import logging
 import asyncio
 from typing import Dict, List, Tuple
 from app.models import ProcessedReview, ReviewFromDB
-from .dynamodb_service import DynamoDBService
-from .openai_service import OpenAIService
-from .delivery_service import DeliveryService
+from app.services.dynamodb_service import DynamoDBService
+from app.services.openai_service import OpenAIService
+from app.services.delivery_service import DeliveryService
+from app.services.postgres_service import PostgresService
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +21,13 @@ class ReviewProcessingService:
             db_service: DynamoDBService,
             openai_service: OpenAIService,
             delivery_service: DeliveryService,
+            postgres_service: PostgresService,
             batch_size: int = 10
     ):
         self.db_service = db_service
         self.openai_service = openai_service
         self.delivery_service = delivery_service
+        self.postgres_service = postgres_service
         self.batch_size = batch_size
         logger.info(f"ReviewProcessingService initialized with batch_size={batch_size}")
 
@@ -155,7 +158,7 @@ class ReviewProcessingService:
         batch_id: str
     ) -> bool:
         """
-        Доставляє батч відгуків і маркує їх як оброблені ТІЛЬКИ при успіху
+        Доставляє батч відгуків, маркує як оброблені та зберігає в Postgres
 
         Args:
             batch: Список оброблених відгуків
@@ -177,6 +180,12 @@ class ReviewProcessingService:
                 await self.db_service.mark_as_processed(source, review_id)
             
             logger.info(f"[Batch {batch_id}] Successfully marked {len(batch_ids)} reviews as processed")
+            
+            # Зберігаємо в PostgreSQL
+            logger.info(f"[Batch {batch_id}] Saving to PostgreSQL...")
+            pg_result = await self.postgres_service.save_processed_reviews(batch)
+            logger.info(f"[Batch {batch_id}] PostgreSQL save result: {pg_result}")
+            
             return True
             
         except Exception as e:

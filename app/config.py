@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
 
+    # PostgreSQL
+    postgres_url: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False
