@@ -1,11 +1,11 @@
 # Review Collector 🚀
 
-Serverless система для збору відгуків з **будь-якого додатку** через SerpAPI - App Store, Google Play та Trustpilot.
+Serverless система для збору відгуків з **будь-якого додатку** через SerpAPI та DataForSEO - App Store, Google Play та Trustpilot.
 
 ## 🎯 Особливості
 
 - ✅ **Збір відгуків з будь-якого додатку** - не тільки свого!
-- ✅ **Один API key** (SerpAPI) замість окремих для кожної платформи
+- ✅ **Два API провайдери**: SerpAPI (App Store, Google Play) + DataForSEO (Trustpilot)
 - ✅ **HTTP API** - збирайте відгуки через простий POST запит
 - ✅ **Ручний тригер** - скрипти для інтерактивного запуску
 - ✅ **Idempotent** - відсутність дублікатів через `content_hash`
@@ -16,11 +16,16 @@ Serverless система для збору відгуків з **будь-як�
 
 ## 🚀 Швидкий Старт
 
-### 1. Отримати SerpAPI Key
+### 1. Отримати API Keys
 
 ```bash
+# SerpAPI (для App Store, Google Play)
 # Зареєструватись: https://serpapi.com/users/sign_up
 # Free tier: 100 searches/month
+
+# DataForSEO (для Trustpilot)
+# Зареєструватись: https://dataforseo.com/
+# Credentials: login + password
 ```
 
 ### 2. Setup
@@ -28,10 +33,13 @@ Serverless система для збору відгуків з **будь-як�
 ```bash
 cd review_collector
 
-# Додати SerpAPI key в AWS
+# Додати API credentials в AWS Secrets Manager
 aws secretsmanager put-secret-value \
   --secret-id review-collector/credentials \
-  --secret-string '{"serpapi":{"api_key":"YOUR_KEY"}}'
+  --secret-string '{
+    "serpapi": {"api_key": "YOUR_SERPAPI_KEY"},
+    "dataforseo": {"login": "your@email.com", "password": "your_password"}
+  }'
 
 # Встановити CDK залежності
 cd cdk
@@ -71,7 +79,11 @@ curl -X POST "https://YOUR_API_URL/collect-reviews" \
 
 ## 📖 Повна Документація
 
-➡️ **[SERPAPI_GUIDE.md](./SERPAPI_GUIDE.md)** - Детальний гайд з усіма прикладами
+➡️ **[API_INSTRUCTIONS.md](./API_INSTRUCTIONS.md)** - Інструкція користувача API  
+➡️ **[SERPAPI_GUIDE.md](./SERPAPI_GUIDE.md)** - Гайд по SerpAPI (App Store, Google Play)  
+➡️ **[DATAFORSEO_GUIDE.md](./DATAFORSEO_GUIDE.md)** - Гайд по DataForSEO (Trustpilot)  
+➡️ **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Інструкція деплою  
+➡️ **[DATABASE_ACCESS.md](./DATABASE_ACCESS.md)** - Доступ до даних у DynamoDB
 
 ---
 
@@ -95,8 +107,9 @@ curl -X POST "https://YOUR_API_URL/collect-reviews" \
        ┌──────────┴──────────┐
        ▼                     ▼
 ┌─────────────┐      ┌─────────────┐
-│  SerpAPI    │      │  DynamoDB   │
-│  (3 clients)│      │ ReviewsTable│
+│ API Clients │      │  DynamoDB   │
+│ - SerpAPI   │      │ ReviewsTable│
+│ - DataForSEO│      │             │
 └─────────────┘      └─────────────┘
 ```
 

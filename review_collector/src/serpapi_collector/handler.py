@@ -15,6 +15,7 @@ from typing import Dict, Any
 from serpapi_appstore_client import SerpAPIAppStoreClient
 from serpapi_googleplay_client import SerpAPIGooglePlayClient
 from serpapi_trustpilot_client import SerpAPITrustpilotClient
+from dataforseo_trustpilot_client import DataForSEOTrustpilotClient
 from request_schema import (
     CollectReviewsRequest,
     CollectReviewsResponse,
@@ -35,7 +36,10 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     """
-    🎯 Unified Lambda handler for review collection via SerpAPI.
+    🎯 Unified Lambda handler for review collection via SerpAPI/DataForSEO.
+    
+    For Trustpilot (DataForSEO): Returns 202 Accepted immediately after task creation
+    For other sources (SerpAPI): Returns 200 OK with results
     
     Supports 2 invocation methods:
     
@@ -43,23 +47,23 @@ def lambda_handler(event, context):
     ---------------------------
     POST /collect-reviews
     {
-        "source": "appstore",
-        "app_identifier": "544007664",
-        "brand": "telegram",
-        "limit": 100
+        "source": "trustpilot",
+        "app_identifier": "www.zara.com",
+        "brand": "zara",
+        "limit": 40
     }
     
     2️⃣ Direct Lambda Invoke
     ------------------------
     aws lambda invoke --function-name serpapi-collector-lambda \
-      --payload '{"source":"appstore","app_identifier":"544007664","brand":"telegram"}'
+      --payload '{"source":"trustpilot","app_identifier":"www.zara.com","brand":"zara"}'
     
     Args:
         event: Event data (format depends on invocation method)
         context: Lambda context object
         
     Returns:
-        Response with statistics and status
+        Response with task info or statistics
     """
     logger.info("=" * 60)
     logger.info("🚀 Unified Review Collector Lambda Started")
@@ -71,7 +75,7 @@ def lambda_handler(event, context):
         request = parse_lambda_event(event)
         logger.info(f"✅ Parsed request: {request.to_dict()}")
         
-        # 🚀 Execute collection
+        # 🚀 Execute collection (sync for all sources)
         stats = _collect_reviews(request)
         
         # 📊 Format success response
@@ -123,24 +127,34 @@ def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
     
     logger.info(f"🎯 Collecting reviews from {source} for {brand} (app: {app_identifier})")
     
-    # Get SerpAPI key from Secrets Manager
-    logger.info("🔐 Retrieving SerpAPI credentials...")
+    # Get API credentials from Secrets Manager
+    logger.info("🔐 Retrieving API credentials...")
     secrets_client = SecretsClient()
-    serpapi_key = secrets_client.get_serpapi_key()
     
-    if not serpapi_key:
-        raise ValueError("SerpAPI key not found in Secrets Manager")
+    # Select appropriate API client based on source
+    if source == 'trustpilot':
+        # Use DataForSEO for Trustpilot
+        logger.info("Using DataForSEO API for Trustpilot")
+        dataforseo_creds = secrets_client.get_dataforseo_credentials()
+        api_client = DataForSEOTrustpilotClient(
+            login=dataforseo_creds['login'],
+            password=dataforseo_creds['password']
+        )
+    else:
+        # Use SerpAPI for App Store and Google Play
+        logger.info(f"Using SerpAPI for {source}")
+        serpapi_key = secrets_client.get_serpapi_key()
+        
+        if not serpapi_key:
+            raise ValueError("SerpAPI key not found in Secrets Manager")
+        
+        clients = {
+            'appstore': SerpAPIAppStoreClient(serpapi_key),
+            'googleplay': SerpAPIGooglePlayClient(serpapi_key)
+        }
+        
+        api_client = clients[source]
     
-    logger.info("✅ SerpAPI credentials retrieved")
-    
-    # Select appropriate SerpAPI client
-    clients = {
-        'appstore': SerpAPIAppStoreClient(serpapi_key),
-        'googleplay': SerpAPIGooglePlayClient(serpapi_key),
-        'trustpilot': SerpAPITrustpilotClient(serpapi_key)
-    }
-    
-    api_client = clients[source]
     logger.info(f"✅ Initialized {api_client.__class__.__name__}")
     
     # Initialize repository
@@ -152,7 +166,7 @@ def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
     
     logger.info("🚀 Starting collection workflow...")
     stats = use_case.execute(
-        credentials={},  # SerpAPI key already in client
+        credentials={},  # API credentials already in client
         app_identifier=app_identifier,
         brand=brand,
         since=None,

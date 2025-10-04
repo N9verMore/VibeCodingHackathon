@@ -51,10 +51,12 @@ POST
 2. URL виглядає так: `https://play.google.com/store/apps/details?id=org.telegram.messenger`
 3. Ідентифікатор: `org.telegram.messenger` (значення параметра `id`)
 
-#### Trustpilot
+#### Trustpilot (через DataForSEO API)
 1. Відкрийте сторінку компанії на Trustpilot
-2. URL виглядає так: `https://www.trustpilot.com/review/telegram.org`
-3. Ідентифікатор: `telegram.org` (домен після `/review/`)
+2. URL виглядає так: `https://www.trustpilot.com/review/www.zara.com`
+3. Ідентифікатор: `www.zara.com` (повний домен після `/review/`)
+
+**⚠️ Важливо**: Trustpilot використовує DataForSEO API з асинхронною моделлю (task-based), тому запити можуть виконуватись 5-15 секунд. Детальніше див. [DATAFORSEO_GUIDE.md](DATAFORSEO_GUIDE.md)
 
 ### Крок 3: Зробіть запит
 

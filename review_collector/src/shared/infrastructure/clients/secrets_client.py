@@ -25,6 +25,10 @@ class SecretsClient:
         "serpapi": {
             "api_key": "your_serpapi_api_key"
         },
+        "dataforseo": {
+            "login": "your_email@example.com",
+            "password": "your_password"
+        },
         "appstore": {
             "key_id": "...",
             "issuer_id": "...",
@@ -161,4 +165,25 @@ class SecretsClient:
             raise ValueError("Missing required SerpAPI credential: api_key")
         
         return serpapi['api_key']
+    
+    def get_dataforseo_credentials(self) -> Dict[str, str]:
+        """
+        Get DataForSEO API credentials.
+        
+        Returns:
+            Dict with login and password
+        """
+        credentials = self.get_all_credentials()
+        
+        if 'dataforseo' not in credentials:
+            raise ValueError("DataForSEO credentials not found in secret")
+        
+        dataforseo = credentials['dataforseo']
+        required_keys = ['login', 'password']
+        
+        for key in required_keys:
+            if key not in dataforseo:
+                raise ValueError(f"Missing required DataForSEO credential: {key}")
+        
+        return dataforseo
 

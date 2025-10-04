@@ -241,7 +241,7 @@ class ReviewCollectorStack(Stack):
                 }
             ),
             layers=[shared_layer],
-            timeout=Duration.seconds(120),
+            timeout=Duration.seconds(90),  # Enough for DataForSEO polling (~30-60 sec)
             memory_size=512,
             environment={
                 "TABLE_NAME": table.table_name,
