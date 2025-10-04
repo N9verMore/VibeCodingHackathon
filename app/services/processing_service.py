@@ -96,34 +96,62 @@ class ReviewProcessingService:
             Dict: Статистика обробки батчу
         """
         batch_id = f"{reviews_batch[0].id[:8]}...{reviews_batch[-1].id[:8]}"
-        logger.info(f"[Batch {batch_id}] Processing {len(reviews_batch)} reviews...")
+        logger.info(f"[Batch {batch_id}] Processing {len(reviews_batch)} items...")
 
         try:
-            # 1. Аналізуємо ВСІ відгуки в батчі ОДНИМ запитом до OpenAI
-            analyses = await self.openai_service.analyze_reviews_batch(reviews_batch)
-
-            # 2. Створюємо ProcessedReview об'єкти
+            # Розділяємо на новини та відгуки
+            news_items = [r for r in reviews_batch if r.source.value == "news"]
+            review_items = [r for r in reviews_batch if r.source.value != "news"]
+            
             processed_reviews = []
             batch_ids = []
+            
+            # 1. Обробляємо звичайні відгуки батчем
+            if review_items:
+                logger.info(f"[Batch {batch_id}] Analyzing {len(review_items)} reviews in batch...")
+                analyses = await self.openai_service.analyze_reviews_batch(review_items)
+                
+                for review, analysis in zip(review_items, analyses):
+                    processed_reviews.append(ProcessedReview(
+                        id=review.id,
+                        source=review.source,
+                        backlink=review.backlink,
+                        text=review.text,
+                        rating=review.rating,
+                        created_at=review.created_at,
+                        sentiment=analysis.sentiment,
+                        description=analysis.description,
+                        categories=analysis.categories,
+                        severity=analysis.severity,
+                        is_processed=True
+                    ))
+                    batch_ids.append((review.source.value, review.id))
+            
+            # 2. Обробляємо новини окремо (з web search)
+            if news_items:
+                logger.info(f"[Batch {batch_id}] Analyzing {len(news_items)} news items individually...")
+                for news_item in news_items:
+                    try:
+                        analysis = await self.openai_service.analyze_news(news_item.backlink)
+                        processed_reviews.append(ProcessedReview(
+                            id=news_item.id,
+                            source=news_item.source,
+                            backlink=news_item.backlink,
+                            text=news_item.text,
+                            rating=None,  # News не мають rating
+                            created_at=news_item.created_at,
+                            sentiment=analysis.sentiment,
+                            description=analysis.description,
+                            categories=analysis.categories,
+                            severity=analysis.severity,
+                            is_processed=True
+                        ))
+                        batch_ids.append((news_item.source.value, news_item.id))
+                    except Exception as e:
+                        logger.error(f"[Batch {batch_id}] Failed to analyze news {news_item.id}: {str(e)}")
+                        continue
 
-            for review, analysis in zip(reviews_batch, analyses):
-                processed_review = ProcessedReview(
-                    id=review.id,
-                    source=review.source,
-                    backlink=review.backlink,
-                    text=review.text,
-                    rating=review.rating,
-                    created_at=review.created_at,
-                    sentiment=analysis.sentiment,
-                    description=analysis.description,
-                    categories=analysis.categories,
-                    severity=analysis.severity,
-                    is_processed=True
-                )
-                processed_reviews.append(processed_review)
-                batch_ids.append((review.source.value, review.id))
-
-            logger.info(f"[Batch {batch_id}] All {len(processed_reviews)} reviews analyzed successfully")
+            logger.info(f"[Batch {batch_id}] All {len(processed_reviews)} items analyzed successfully")
 
             # 3. Доставляємо батч (атомарна операція)
             delivery_success = await self._deliver_batch(processed_reviews, batch_ids, batch_id)

@@ -111,7 +111,7 @@ class OpenAIService:
                 sentiment = self._normalize_sentiment(item["sentiment"])
                 # Fallback мапінг для severity
                 severity = self._normalize_severity(item["severity"])
-                
+
                 analyses.append(LLMAnalysis(
                     sentiment=sentiment,
                     description=item["description"],
@@ -251,7 +251,7 @@ Severity рівні:
             str: Нормалізований sentiment
         """
         sentiment_lower = sentiment.lower().strip()
-        
+
         # Мапінг різних варіантів на українські значення
         sentiment_map = {
             # Українська (правильна)
@@ -271,9 +271,9 @@ Severity рівні:
             "негативный": "негативний",
             "нейтральный": "нейтральний",
         }
-        
+
         result = sentiment_map.get(sentiment_lower)
-        
+
         if result:
             if sentiment_lower != result:
                 logger.warning(f"Normalized sentiment '{sentiment}' -> '{result}'")
@@ -281,7 +281,7 @@ Severity рівні:
         else:
             logger.error(f"Unknown sentiment value: '{sentiment}', defaulting to 'нейтральний'")
             return "нейтральний"
-    
+
     def _normalize_severity(self, severity: str) -> str:
         """
         Нормалізує severity до правильного формату
@@ -293,11 +293,84 @@ Severity рівні:
             str: Нормалізований severity
         """
         severity_lower = severity.lower().strip()
-        
+
         valid_severities = {"low", "medium", "high", "critical"}
-        
+
         if severity_lower in valid_severities:
             return severity_lower
         else:
             logger.error(f"Unknown severity value: '{severity}', defaulting to 'medium'")
             return "medium"
+
+    async def analyze_news(self, url: str) -> LLMAnalysis:
+        """
+        Аналізує новину за URL з використанням web search
+        
+        Args:
+            url: URL новини
+            
+        Returns:
+            LLMAnalysis: Результат аналізу
+        """
+        try:
+            logger.info(f"Analyzing news from URL: {url}")
+
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": self._get_news_system_prompt()
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Проаналізуй новину за посиланням: {url}"
+                    }
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.3
+            )
+
+            result = response.choices[0].message.content
+            parsed = json.loads(result)
+
+            sentiment = self._normalize_sentiment(parsed["sentiment"])
+            severity = self._normalize_severity(parsed["severity"])
+
+            return LLMAnalysis(
+                sentiment=sentiment,
+                description=parsed["description"],
+                categories=parsed["categories"],
+                severity=severity
+            )
+
+        except Exception as e:
+            logger.error(f"OpenAI API error for news {url}: {str(e)}")
+            raise Exception(f"Failed to analyze news: {str(e)}")
+
+    def _get_news_system_prompt(self) -> str:
+        """Системний промпт для аналізу новин"""
+        return """Ти - експерт з аналізу новин про компанію/бренд.
+Твоє завдання: прочитати новину за посиланням, визначити настрій, описати про що новина,
+категоризувати та визначити рівень критичності для репутації бренду.
+
+Рівні критичності (severity):
+- "low": Нейтральна згадка, позитивна новина, незначні події
+- "medium": Критика, скандал, негативні чутки
+- "high": Серйозні звинувачення, проблеми з продуктом, втрата клієнтів
+- "critical": Криза, судові позови, серйозні порушення, загроза бізнесу
+
+Категорії (може бути кілька):
+репутація, продукт, фінанси, юридичні, скандал, інновації, позитивні, партнерство, інше
+
+КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
+- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
+
+Відповідай ТІЛЬКИ у форматі JSON:
+{
+  "sentiment": "позитивний",
+  "description": "короткий опис про що новина та її вплив на репутацію бренду",
+  "categories": ["категорія1", "категорія2"],
+  "severity": "low"
+}"""

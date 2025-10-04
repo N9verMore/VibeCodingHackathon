@@ -274,7 +274,7 @@ class DynamoDBService:
             app_identifier=item['app_identifier'],
             title=item.get('title'),
             text=item.get('text'),
-            rating=int(item['rating']),
+            rating=int(item['rating']) if item.get('rating') is not None and int(item.get('rating', -1)) > 0 else None,
             language=item['language'],
             country=item.get('country'),
             author_hint=item.get('author_hint'),

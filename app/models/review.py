@@ -17,7 +17,7 @@ class ReviewFromDB(BaseModel):
     app_identifier: str
     title: Optional[str] = None
     text: Optional[str] = None
-    rating: int = Field(..., ge=1, le=5)
+    rating: Optional[int] = Field(None, ge=1, le=5)  # Optional для news
     language: str
     country: Optional[str] = None
     author_hint: Optional[str] = None
@@ -40,7 +40,7 @@ class ProcessedReview(BaseModel):
     source: ReviewSource
     backlink: str
     text: Optional[str]
-    rating: int
+    rating: Optional[int] = None  # Optional для news
     created_at: datetime
     sentiment: Sentiment
     description: str

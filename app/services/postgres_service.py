@@ -22,7 +22,7 @@ class ProcessedReviewDB(Base):
     source = Column(String, nullable=False)
     backlink = Column(Text, nullable=False)
     text = Column(Text)
-    rating = Column(Integer, nullable=False)
+    rating = Column(Integer, nullable=True)  # Optional для news
     created_at = Column(DateTime, nullable=False)
     
     # LLM Analysis

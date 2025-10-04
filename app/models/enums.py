@@ -9,6 +9,7 @@ class ReviewSource(str, Enum):
     appstore = "appstore"
     googleplay = "googleplay"
     trustpilot = "trustpilot"
+    news = "news"
 
 
 class Sentiment(str, Enum):
