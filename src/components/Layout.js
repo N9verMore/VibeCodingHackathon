@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, FileText, Home, Smartphone, Apple, MessageSquare, Bug } from 'lucide-react';
+import { BarChart3, FileText, Home, Smartphone, Apple, MessageSquare, Bug, Star } from 'lucide-react';
 import Header from './Header';
 import Issues from './Issues';
 
@@ -11,7 +11,8 @@ export default function Layout({ children }) {
   const [dataSources, setDataSources] = useState({
     playStore: true,
     appStore: true,
-    threads: false
+    threads: false,
+    trustpilot: false
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export default function Layout({ children }) {
     { id: 'playStore', label: 'Play Store', icon: Smartphone },
     { id: 'appStore', label: 'App Store', icon: Apple },
     { id: 'threads', label: 'Threads', icon: MessageSquare },
+    { id: 'trustpilot', label: 'Trustpilot', icon: Star },
   ];
 
   const handleDataSourceChange = (sourceId) => {
@@ -48,6 +50,7 @@ export default function Layout({ children }) {
       if (dataSources.appStore) sources.push('appstore');
       if (dataSources.playStore) sources.push('playstore');
       if (dataSources.threads) sources.push('threads');
+      if (dataSources.trustpilot) sources.push('trustpilot');
       
       // Make API call to collect reviews
       const response = await fetch('https://xp9v1vxlih.execute-api.us-east-1.amazonaws.com/prod/collect-reviews', {
@@ -59,7 +62,7 @@ export default function Layout({ children }) {
           source: 'appstore',
           app_identifier: "547951480",
           brand: "zara",
-          limit: 200,
+          limit: 20,
           date_period: {
             start_date: startDate,
             end_date: endDate

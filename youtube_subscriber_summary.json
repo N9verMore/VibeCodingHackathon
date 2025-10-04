@@ -1,0 +1,49 @@
+{
+  "totalChannels": 274,
+  "processedChannels": 274,
+  "successfulFetches": 274,
+  "failedFetches": 0,
+  "timestamp": "2025-10-04T18:04:26.722Z",
+  "topChannels": [
+    {
+      "author": "T-Series",
+      "subscriberCount": 304000000
+    },
+    {
+      "author": "YRF",
+      "subscriberCount": 69600000
+    },
+    {
+      "author": "Saregama Music",
+      "subscriberCount": 58600000
+    },
+    {
+      "author": "T-Series Bollywood Classics",
+      "subscriberCount": 50400000
+    },
+    {
+      "author": "atv",
+      "subscriberCount": 13400000
+    },
+    {
+      "author": "Clean Bandit",
+      "subscriberCount": 10700000
+    },
+    {
+      "author": "Double Bubble",
+      "subscriberCount": 7420000
+    },
+    {
+      "author": "Poll Production",
+      "subscriberCount": 6850000
+    },
+    {
+      "author": "Allen Choudhary",
+      "subscriberCount": 4540000
+    },
+    {
+      "author": "Aina Editzz",
+      "subscriberCount": 4520000
+    }
+  ]
+}

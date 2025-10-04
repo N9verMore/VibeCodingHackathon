@@ -16,18 +16,8 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
 
   const fetchComments = async () => {
     try {
-      // Fetch real comments data from API
-      const response = await fetch('http://10.8.0.5:8000/api/comments', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
+      // Use YouTube comments data as temporary mock
+      const response = await fetch('/youtube_comments.json');
       const apiData = await response.json();
       
       // Transform API data and categorize posts by highest sentiment score
@@ -51,11 +41,13 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
           author: comment.author || 'Anonymous',
           platform: mapPlatformName(comment.platform),
           sentiment: dominantSentiment,
-          publishDate: comment.publish_date || comment.created_at,
+          publishDate: comment.date || comment.publish_date || comment.created_at,
           likes: comment.likes || 0,
           replies: comment.replies || 0,
           rating: comment.rating || null,
-          sentimentScores: sentimentScores
+          sentimentScores: sentimentScores,
+          thumbnail: comment.thumbnail || null,
+          url: comment.url || null
         };
       });
 
@@ -100,7 +92,8 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
       'twitter': 'Twitter',
       'facebook': 'Facebook',
       'instagram': 'Instagram',
-      'threads': 'Threads'
+      'threads': 'Threads',
+      'youtube': 'YouTube'
     };
     return platformMap[platform] || platform;
   };

@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "youtube:parse": "node scripts/parse_youtube_videos.js",
+    "youtube:subscribers": "node scripts/fetch_subscriber_counts.js",
+    "youtube:enhance": "node scripts/enhance_video_data.js",
+    "youtube:all": "node scripts/run_youtube_parser.js",
+    "youtube:clean": "rm -f youtube_enhance_progress.json && echo 'Progress files cleaned up'",
+    "youtube:help": "echo 'YouTube Parser Commands:' && echo '  pnpm youtube:parse     - Parse YouTube videos by #zara hashtag' && echo '  pnpm youtube:subscribers - Fetch subscriber counts for authors' && echo '  pnpm youtube:enhance    - Enhance videos with views, likes, comments' && echo '  pnpm youtube:all        - Run complete pipeline (recommended)' && echo '  pnpm youtube:clean      - Clean up progress files' && echo '  pnpm youtube:help       - Show this help message'"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
