@@ -16,30 +16,53 @@ export default function Issues() {
 
   const fetchIssues = async () => {
     try {
-      // Mock data for now - replace with actual API call
-      const mockIssues = {
-        categories: [
-          { id: 'performance', name: 'Performance', count: 23, color: 'red', trend: '+12%' },
-          { id: 'ui-ux', name: 'UI/UX Issues', count: 15, color: 'orange', trend: '-5%' },
-          { id: 'bugs', name: 'Bugs', count: 8, color: 'yellow', trend: '+3%' },
-          { id: 'security', name: 'Security', count: 5, color: 'purple', trend: '-2%' },
-          { id: 'compatibility', name: 'Compatibility', count: 12, color: 'blue', trend: '+8%' },
-          { id: 'feature-requests', name: 'Feature Requests', count: 18, color: 'green', trend: '+15%' }
-        ],
-        recentIssues: [
-          { id: 1, title: 'App crashes on iOS 17', category: 'bugs', severity: 'high', date: '2024-01-15', source: 'App Store' },
-          { id: 2, title: 'Slow loading times', category: 'performance', severity: 'medium', date: '2024-01-14', source: 'Play Store' },
-          { id: 3, title: 'Button not clickable', category: 'ui-ux', severity: 'medium', date: '2024-01-13', source: 'Threads' },
-          { id: 4, title: 'Login authentication issue', category: 'security', severity: 'high', date: '2024-01-12', source: 'App Store' },
-          { id: 5, title: 'Dark mode not working', category: 'ui-ux', severity: 'low', date: '2024-01-11', source: 'Play Store' }
-        ]
+      // Fetch real issues data from API
+      const response = await fetch('http://10.8.0.5:8000/api/statistics', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const apiData = await response.json();
+      
+      // Transform API data to match our frontend structure
+      const transformedIssues = {
+        categories: apiData.top_categories?.map((category, index) => ({
+          id: category.category,
+          name: formatCategoryName(category.category),
+          count: category.count,
+          color: getCategoryColor(index),
+        })) || [],
+        recentIssues: [] // You can fetch recent issues from a separate endpoint if available
       };
-      setIssues(mockIssues);
+      
+      setIssues(transformedIssues);
     } catch (error) {
       console.error('Failed to fetch issues:', error);
+      // If API fails, show empty state instead of mock data
+      setIssues({ categories: [], recentIssues: [] });
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to format category names
+  const formatCategoryName = (category) => {
+    return category
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Helper function to assign colors to categories
+  const getCategoryColor = (index) => {
+    const colors = ['red', 'orange', 'yellow', 'purple', 'blue', 'green'];
+    return colors[index % colors.length];
   };
 
   const getColorClasses = (color) => {
@@ -93,13 +116,13 @@ export default function Issues() {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-black">Issues & Problems</h1>
+          <h1 className="text-3xl font-bold text-black">Posts & Feedback</h1>
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search issues..."
+                placeholder="Search posts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-sm w-64"
@@ -140,12 +163,12 @@ export default function Issues() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.name}</h3>
               <p className="text-3xl font-bold text-gray-900 mb-2">{category.count}</p>
-              <p className="text-sm text-gray-500">Total issues</p>
+              <p className="text-sm text-gray-500">Total posts</p>
             </motion.div>
           ))}
         </div>
 
-        {/* Recent Issues Table */}
+        {/* Recent Posts Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,15 +176,15 @@ export default function Issues() {
           className="bg-white border border-gray-200 rounded-lg shadow-md"
         >
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Issues</h2>
-            <p className="text-sm text-gray-500 mt-1">Latest problems reported across all sources</p>
+            <h2 className="text-xl font-semibold text-gray-900">Recent Posts</h2>
+            <p className="text-sm text-gray-500 mt-1">Latest feedback and posts across all sources</p>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Post</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>

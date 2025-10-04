@@ -13,10 +13,11 @@ export default function Layout({ children }) {
     appStore: true,
     threads: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'issues', label: 'Issues', icon: Bug },
+    { id: 'posts', label: 'Posts', icon: MessageSquare },
     { id: 'resources', label: 'Resources', icon: FileText },
   ];
 
@@ -33,9 +34,58 @@ export default function Layout({ children }) {
     }));
   };
 
-  const handleApplyChanges = () => {
-    console.log('Applied data sources:', dataSources);
-    // Here you would typically make an API call to update the data sources
+  const handleApplyChanges = async () => {
+    setIsLoading(true);
+    try {
+      console.log('Applied data sources:', dataSources);
+      
+      // Get current date and 30 days ago
+      const endDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
+      
+      // Map data sources to API format
+      const sources = [];
+      if (dataSources.appStore) sources.push('appstore');
+      if (dataSources.playStore) sources.push('playstore');
+      if (dataSources.threads) sources.push('threads');
+      
+      // Make API call to collect reviews
+      const response = await fetch('https://xp9v1vxlih.execute-api.us-east-1.amazonaws.com/prod/collect-reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source: 'appstore',
+          app_identifier: "547951480",
+          brand: "zara",
+          limit: 200,
+          date_period: {
+            start_date: startDate,
+            end_date: endDate
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('API Response:', result);
+      
+      // Trigger data refresh event for dashboard
+      window.dispatchEvent(new CustomEvent('dataRefreshed'));
+      
+      // You can add success notification here
+      alert(`Data collection started successfully for ${sources.join(', ')} from ${startDate} to ${endDate}!`);
+      
+    } catch (error) {
+      console.error('Error calling API:', error);
+      alert('Error collecting data: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,7 +133,7 @@ export default function Layout({ children }) {
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 overflow-auto bg-blue-50">
             {activeTab === 'dashboard' && children}
-            {activeTab === 'issues' && <Issues />}
+            {activeTab === 'posts' && <Issues />}
             {activeTab === 'resources' && (
               <div className="p-8">
                 <h1 className="text-3xl font-bold text-black mb-8">Resources</h1>
@@ -136,12 +186,17 @@ export default function Layout({ children }) {
 
               {/* Apply Button */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 onClick={handleApplyChanges}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                disabled={isLoading}
+                className={`w-full py-3 px-4 rounded-lg font-medium focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors ${
+                  isLoading 
+                    ? 'bg-green-400 text-white cursor-not-allowed' 
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
               >
-                Apply Changes
+                {isLoading ? 'Collecting Data...' : 'Apply Changes'}
               </motion.button>
 
               {/* Status Info */}
