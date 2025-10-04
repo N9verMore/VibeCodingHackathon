@@ -17,6 +17,7 @@ class ReviewSource(str, Enum):
     APP_STORE = "appstore"
     GOOGLE_PLAY = "googleplay"
     TRUSTPILOT = "trustpilot"
+    REDDIT = "reddit"
 
 
 @dataclass
@@ -32,7 +33,7 @@ class Review:
         app_identifier: bundleId / packageName / businessUnitId
         title: Review title (optional)
         text: Review content (optional)
-        rating: Star rating (1-5)
+        rating: Star rating (1-5, or -1 for sources without ratings like Reddit)
         language: ISO language code (e.g., 'en', 'uk')
         country: ISO country code (optional, e.g., 'US', 'UA')
         author_hint: Username/nickname without PII
@@ -71,8 +72,8 @@ class Review:
         if not isinstance(self.source, ReviewSource):
             raise ValueError(f"Invalid source: {self.source}")
         
-        if not 1 <= self.rating <= 5:
-            raise ValueError(f"Rating must be 1-5, got {self.rating}")
+        if not (self.rating == -1 or 1 <= self.rating <= 5):
+            raise ValueError(f"Rating must be -1 (no rating) or 1-5, got {self.rating}")
         
         if not self.brand:
             raise ValueError("Brand cannot be empty")

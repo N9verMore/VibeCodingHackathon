@@ -25,6 +25,7 @@ MANIFEST
 
 # Virtual environments
 venv/
+venv_reddit/
 env/
 ENV/
 .venv/
@@ -57,6 +58,9 @@ cdk.context.json
 .coverage
 htmlcov/
 *.cover
+
+# Reddit test outputs
+scripts/reddit_*.json
 
 # MyPy
 .mypy_cache/

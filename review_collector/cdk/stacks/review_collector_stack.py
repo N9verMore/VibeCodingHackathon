@@ -75,22 +75,32 @@ class ReviewCollectorStack(Stack):
             shared_layer=shared_layer
         )
         
-        # 6. NEW: Create orchestration Lambda functions
+        # 6. Create Lambda Function for Reddit collection
+        reddit_lambda = self._create_reddit_lambda(
+            base_path=base_path,
+            table=reviews_table,
+            secret=secret,
+            shared_layer=shared_layer
+        )
+        
+        # 7. NEW: Create orchestration Lambda functions
         initializer_lambda = self._create_initializer_lambda(base_path)
         http_caller_lambda = self._create_http_caller_lambda(base_path)
         
-        # 7. NEW: Create Step Functions State Machine
+        # 8. NEW: Create Step Functions State Machine
         state_machine = self._create_state_machine(
             serpapi_lambda=serpapi_lambda,
             news_lambda=news_lambda,
+            reddit_lambda=reddit_lambda,
             initializer_lambda=initializer_lambda,
             http_caller_lambda=http_caller_lambda
         )
         
-        # 8. Create API Gateway (with new endpoint)
+        # 9. Create API Gateway (with new endpoint)
         api = self._create_api_gateway(
             serpapi_lambda=serpapi_lambda,
             news_lambda=news_lambda,
+            reddit_lambda=reddit_lambda,
             state_machine=state_machine,
             reviews_table=reviews_table
         )
@@ -332,6 +342,50 @@ class ReviewCollectorStack(Stack):
         
         return fn
     
+    def _create_reddit_lambda(
+        self,
+        base_path: Path,
+        table: dynamodb.Table,
+        secret: secretsmanager.Secret,
+        shared_layer: lambda_.LayerVersion
+    ) -> lambda_.Function:
+        """Create Lambda function for Reddit-based collection."""
+        src_path = str(base_path / "reddit_collector")
+        
+        fn = lambda_.Function(
+            self,
+            "RedditCollectorLambda",
+            function_name="reddit-collector-lambda",
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="handler.lambda_handler",
+            code=lambda_.Code.from_asset(
+                src_path,
+                bundling={
+                    "image": lambda_.Runtime.PYTHON_3_11.bundling_image,
+                    "command": [
+                        "bash", "-c",
+                        "pip install -r requirements.txt -t /asset-output && "
+                        "cp -r . /asset-output/"
+                    ],
+                }
+            ),
+            layers=[shared_layer],
+            timeout=Duration.seconds(900),  # 15 minutes (max for Lambda)
+            memory_size=512,
+            environment={
+                "TABLE_NAME": table.table_name,
+                "SECRET_NAME": secret.secret_name,
+                "POWERTOOLS_SERVICE_NAME": "reddit-collector",
+                "LOG_LEVEL": "INFO",
+            },
+        )
+        
+        # Grant permissions
+        table.grant_read_write_data(fn)
+        secret.grant_read(fn)
+        
+        return fn
+    
     def _create_initializer_lambda(self, base_path: Path) -> lambda_.Function:
         """Create Lambda function for initializing report generation"""
         src_path = str(base_path / "report_initializer")
@@ -386,6 +440,7 @@ class ReviewCollectorStack(Stack):
         self,
         serpapi_lambda: lambda_.Function,
         news_lambda: lambda_.Function,
+        reddit_lambda: lambda_.Function,
         initializer_lambda: lambda_.Function,
         http_caller_lambda: lambda_.Function
     ) -> sfn.StateMachine:
@@ -513,6 +568,35 @@ class ReviewCollectorStack(Stack):
             errors=["States.ALL"]
         )
         
+        # Task 6: Collect from Reddit (with error handling)
+        reddit_task = tasks.LambdaInvoke(
+            self, "CollectReddit",
+            lambda_function=reddit_lambda,
+            payload=sfn.TaskInput.from_object({
+                "brand": sfn.JsonPath.string_at("$.brand"),
+                "keywords": sfn.JsonPath.string_at("$.reddit_keywords"),
+                "limit": sfn.JsonPath.number_at("$.limit"),
+                "days_back": 30,
+                "job_id": sfn.JsonPath.string_at("$.job_id")
+            }),
+            result_selector={
+                "source": "reddit",
+                "success": True,
+                "data.$": "$.Payload"
+            },
+            comment="Collect Reddit posts"
+        ).add_catch(
+            sfn.Pass(
+                self, "RedditError",
+                result=sfn.Result.from_object({
+                    "source": "reddit",
+                    "success": False,
+                    "error": "Collection failed or data source not available"
+                })
+            ),
+            errors=["States.ALL"]
+        )
+        
         # Parallel state - run all collections simultaneously
         parallel_collection = sfn.Parallel(
             self, "ParallelCollection",
@@ -523,6 +607,7 @@ class ReviewCollectorStack(Stack):
         parallel_collection.branch(googleplay_task)
         parallel_collection.branch(trustpilot_task)
         parallel_collection.branch(news_task)
+        parallel_collection.branch(reddit_task)
         
         # Task 6: Call external processing endpoint
         call_processing_endpoint = tasks.LambdaInvoke(
@@ -590,6 +675,7 @@ class ReviewCollectorStack(Stack):
         # ⚠️ ВАЖЛИВО: Grant permissions for Step Functions to invoke Lambda functions
         serpapi_lambda.grant_invoke(state_machine)
         news_lambda.grant_invoke(state_machine)
+        reddit_lambda.grant_invoke(state_machine)
         initializer_lambda.grant_invoke(state_machine)
         http_caller_lambda.grant_invoke(state_machine)
         
@@ -599,6 +685,7 @@ class ReviewCollectorStack(Stack):
         self,
         serpapi_lambda: lambda_.Function,
         news_lambda: lambda_.Function,
+        reddit_lambda: lambda_.Function,
         state_machine: sfn.StateMachine,
         reviews_table: dynamodb.Table
     ) -> apigateway.RestApi:
@@ -646,6 +733,24 @@ class ReviewCollectorStack(Stack):
         
         # Add CORS for news
         collect_news_resource.add_cors_preflight(
+            allow_origins=["*"],
+            allow_methods=["POST", "OPTIONS"],
+            allow_headers=["Content-Type", "Authorization"],
+        )
+        
+        # Integration for Reddit collection
+        reddit_integration = apigateway.LambdaIntegration(
+            reddit_lambda,
+            proxy=True,
+            allow_test_invoke=True,
+        )
+        
+        # POST /collect-reddit endpoint
+        collect_reddit_resource = api.root.add_resource("collect-reddit")
+        collect_reddit_resource.add_method("POST", reddit_integration)
+        
+        # Add CORS for reddit
+        collect_reddit_resource.add_cors_preflight(
             allow_origins=["*"],
             allow_methods=["POST", "OPTIONS"],
             allow_headers=["Content-Type", "Authorization"],

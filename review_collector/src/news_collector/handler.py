@@ -3,6 +3,9 @@ News Collector Lambda Handler
 
 Entry point for collecting news articles from NewsAPI.
 Independent from review collection - separate Lambda function.
+
+NOTE: This Lambda ALWAYS searches in TITLE only (search_in="title" is hardcoded).
+Any search_in parameter from request is ignored.
 """
 
 import os
@@ -37,6 +40,8 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     """
     🎯 Lambda handler for news collection from NewsAPI.
+    
+    ⚠️ IMPORTANT: Always searches in TITLE only (search_in="title" hardcoded)
     
     Supports 3 invocation methods:
     
@@ -145,6 +150,7 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
     logger.info(f"   Brand for storage: {brand_for_storage}")
     logger.info(f"   Search type: {request.search_type}")
     logger.info(f"   Limit: {request.limit}")
+    logger.info(f"   🔍 Search location: TITLE ONLY (hardcoded)")
     if job_id:
         logger.info(f"   Job ID: {job_id}")
     
@@ -171,6 +177,7 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
     
     logger.info("🚀 Starting collection workflow...")
     # Pass both brand names: search for API, storage for DB
+    # IMPORTANT: Always search in title only (ignore search_in from request)
     stats = use_case.execute(
         brand=brand_for_search,  # Use Title Case with spaces for API search
         brand_for_storage=brand_for_storage,  # Use lowercase with underscores for DB
@@ -182,7 +189,7 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
         country=request.country,
         category=request.category,
         sources=request.sources,
-        search_in=request.search_in
+        search_in="title"  # ALWAYS search in title only
     )
     
     logger.info(f"📊 Collection statistics: {stats}")

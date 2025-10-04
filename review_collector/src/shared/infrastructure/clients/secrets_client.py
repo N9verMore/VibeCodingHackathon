@@ -44,6 +44,11 @@ class SecretsClient:
         },
         "trustpilot": {
             "api_key": "..."
+        },
+        "reddit": {
+            "client_id": "...",
+            "client_secret": "...",
+            "user_agent": "Brand Monitor v1.0"
         }
     }
     """
@@ -208,4 +213,29 @@ class SecretsClient:
             raise ValueError("Missing required NewsAPI credential: api_key")
         
         return newsapi['api_key']
+    
+    def get_reddit_credentials(self) -> Dict[str, str]:
+        """
+        Get Reddit API credentials.
+        
+        Returns:
+            Dict with client_id, client_secret, user_agent
+        """
+        credentials = self.get_all_credentials()
+        
+        if 'reddit' not in credentials:
+            raise ValueError("Reddit credentials not found in secret")
+        
+        reddit = credentials['reddit']
+        required_keys = ['client_id', 'client_secret']
+        
+        for key in required_keys:
+            if key not in reddit:
+                raise ValueError(f"Missing required Reddit credential: {key}")
+        
+        # user_agent is optional, has default
+        if 'user_agent' not in reddit:
+            reddit['user_agent'] = 'Brand Monitor v1.0'
+        
+        return reddit
 

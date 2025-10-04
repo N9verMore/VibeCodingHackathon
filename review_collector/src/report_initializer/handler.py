@@ -66,6 +66,7 @@ def lambda_handler(event, context):
         # Optional fields
         processing_endpoint_url = event.get('processing_endpoint_url', 'https://webhook.site/test-endpoint')
         include_news = event.get('include_news', True)
+        reddit_keywords = event.get('reddit_keywords', '')  # Reddit search keywords
         limit = event.get('limit', 50)
         
         # Validate limit
@@ -86,6 +87,7 @@ def lambda_handler(event, context):
             'job_id': job_id,
             'brand': brand,
             'sources': normalized_sources,  # Use normalized sources with all keys
+            'reddit_keywords': reddit_keywords,  # Pass reddit keywords
             'limit': limit,
             'include_news': include_news,
             'endpoint_url': processing_endpoint_url,  # Renamed for consistency
