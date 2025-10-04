@@ -101,6 +101,7 @@ class SerpAPIGooglePlayClient(SerpAPIBaseClient):
                     'engine': 'google_play_product',
                     'product_id': app_identifier,
                     'store': 'apps',
+                    'all_reviews': 'true',  # Enable pagination beyond default 20
                     'sort_by': '2',  # 2 = newest (1 = most helpful, 2 = newest, 3 = rating)
                 }
                 
@@ -187,7 +188,8 @@ class SerpAPIGooglePlayClient(SerpAPIBaseClient):
         rating = int(raw_data.get('rating', 0))
         title = raw_data.get('title', '')
         text = raw_data.get('snippet', '')
-        date_str = raw_data.get('date', '')
+        # Use iso_date (precise timestamp) if available, fallback to date (human readable)
+        date_str = raw_data.get('iso_date', '') or raw_data.get('date', '')
         version = raw_data.get('version', '')
         likes = raw_data.get('likes', 0)
         
@@ -203,25 +205,39 @@ class SerpAPIGooglePlayClient(SerpAPIBaseClient):
         user_thumbnail = raw_data.get('thumbnail')
         review_images = raw_data.get('images', [])
         
-        # Generate unique ID (SerpAPI doesn't provide review IDs)
-        import hashlib
-        id_content = f"{app_identifier}_{title}_{text[:50]}_{date_str}_{rating}"
-        review_id = hashlib.md5(id_content.encode()).hexdigest()
+        # Use SerpAPI provided ID if available
+        review_id = raw_data.get('id')
+        if not review_id:
+            # Generate unique ID as fallback
+            import hashlib
+            id_content = f"{app_identifier}_{title}_{text[:50]}_{date_str}_{rating}"
+            review_id = hashlib.md5(id_content.encode()).hexdigest()
         
         # Parse date
         try:
-            # SerpAPI date format: "October 1, 2024" or "2024-10-01"
+            # SerpAPI Google Play date formats:
+            # - "2025-09-10T15:58:52Z" (iso_date - preferred)
+            # - "September 10, 2025" (date - human readable)
+            # - "2024-10-01" (ISO format)
             if date_str:
-                if '-' in date_str:
-                    created_at = datetime.fromisoformat(date_str)
+                # Remove 'Z' suffix if present (UTC timezone indicator)
+                date_clean = date_str.rstrip('Z')
+                
+                if 'T' in date_clean:
+                    # ISO 8601 format: "2025-09-10T15:58:52"
+                    created_at = datetime.fromisoformat(date_clean)
+                elif '-' in date_clean:
+                    # ISO date format: "2024-10-01"
+                    created_at = datetime.fromisoformat(date_clean)
                 else:
-                    # Try parsing "October 1, 2024" format
-                    created_at = datetime.strptime(date_str, "%B %d, %Y")
+                    # Human readable format: "September 10, 2025"
+                    created_at = datetime.strptime(date_clean, "%B %d, %Y")
             else:
-                created_at = datetime.utcnow()
+                logger.warning(f"Empty date string for review, skipping")
+                raise ValueError("Empty date string")
         except (ValueError, AttributeError) as e:
-            logger.warning(f"Could not parse date '{date_str}': {e}")
-            created_at = datetime.utcnow()
+            logger.error(f"Could not parse date '{date_str}': {e}. Review will be skipped.")
+            raise ValueError(f"Invalid date format: {date_str}")
         
         # Generate backlink to specific review
         backlink = f"https://play.google.com/store/apps/details?id={app_identifier}&showAllReviews=true"

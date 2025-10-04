@@ -238,18 +238,27 @@ class SerpAPIAppStoreClient(SerpAPIBaseClient):
         
         # Parse date
         try:
-            # SerpAPI date format: "October 1, 2024" or "2024-10-01"
+            # SerpAPI Apple Reviews date formats:
+            # - "Aug 24, 2025" (abbreviated month)
+            # - "October 1, 2024" (full month)
+            # - "2024-10-01" (ISO format)
             if date_str:
                 if '-' in date_str:
+                    # ISO format: "2024-10-01"
                     created_at = datetime.fromisoformat(date_str)
                 else:
-                    # Try parsing "October 1, 2024" format
-                    created_at = datetime.strptime(date_str, "%B %d, %Y")
+                    # Try abbreviated month format first: "Aug 24, 2025"
+                    try:
+                        created_at = datetime.strptime(date_str, "%b %d, %Y")
+                    except ValueError:
+                        # Fall back to full month format: "October 1, 2024"
+                        created_at = datetime.strptime(date_str, "%B %d, %Y")
             else:
-                created_at = datetime.utcnow()
+                logger.warning(f"Empty date string for review, skipping")
+                raise ValueError("Empty date string")
         except (ValueError, AttributeError) as e:
-            logger.warning(f"Could not parse date '{date_str}': {e}")
-            created_at = datetime.utcnow()
+            logger.error(f"Could not parse date '{date_str}': {e}. Review will be skipped.")
+            raise ValueError(f"Invalid date format: {date_str}")
         
         # Generate backlink to reviews section
         backlink = f"https://apps.apple.com/app/id{app_identifier}?see-all=reviews"

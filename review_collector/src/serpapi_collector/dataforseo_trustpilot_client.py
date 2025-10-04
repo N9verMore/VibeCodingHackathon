@@ -50,8 +50,8 @@ class DataForSEOTrustpilotClient(BaseAPIClient):
         login: str,
         password: str,
         timeout: int = 30,
-        max_poll_attempts: int = 20,
-        poll_interval: int = 3
+        max_poll_attempts: int = 15,
+        poll_interval: int = 1
     ):
         """
         Initialize DataForSEO client.
@@ -60,8 +60,8 @@ class DataForSEOTrustpilotClient(BaseAPIClient):
             login: DataForSEO login (email)
             password: DataForSEO password
             timeout: Request timeout in seconds
-            max_poll_attempts: Maximum number of polling attempts
-            poll_interval: Seconds between polling attempts
+            max_poll_attempts: Maximum number of polling attempts (15 attempts)
+            poll_interval: Seconds between polling attempts (1 second for faster response)
         """
         super().__init__(timeout)
         self.login = login
