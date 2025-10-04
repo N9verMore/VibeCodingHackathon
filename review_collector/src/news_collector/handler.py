@@ -37,7 +37,7 @@ def lambda_handler(event, context):
     """
     🎯 Lambda handler for news collection from NewsAPI.
     
-    Supports 2 invocation methods:
+    Supports 3 invocation methods:
     
     1️⃣ API Gateway (HTTP POST)
     ---------------------------
@@ -47,13 +47,18 @@ def lambda_handler(event, context):
         "limit": 50,
         "search_type": "everything",
         "from_date": "2025-10-01",
-        "language": "en"
+        "language": "en",
+        "job_id": "job_20251004_abc123" (optional)
     }
     
     2️⃣ Direct Lambda Invoke
     ------------------------
     aws lambda invoke --function-name news-collector-lambda \
       --payload '{"brand":"Tesla","limit":50}'
+    
+    3️⃣ Step Functions Invoke (NEW)
+    -------------------------------
+    Called from Step Functions with job_id for orchestration
     
     Args:
         event: Event data (format depends on invocation method)
@@ -68,51 +73,64 @@ def lambda_handler(event, context):
     logger.info(f"Event: {json.dumps(event, default=str)}")
     
     try:
+        # Extract job_id if provided (for Step Functions orchestration)
+        job_id = event.get('job_id') if isinstance(event, dict) else None
+        if job_id:
+            logger.info(f"🔖 Job ID: {job_id}")
+        
         # 🔍 Parse and validate request
         request = parse_lambda_event(event)
         logger.info(f"✅ Parsed request: {request.to_dict()}")
         
         # 🚀 Execute collection
-        stats = _collect_news(request)
+        stats = _collect_news(request, job_id=job_id)
         
         # 📊 Format success response
-        response = CollectNewsResponse.success_response(
-            message='News articles collected successfully',
-            statistics=stats,
-            request_data=request.to_dict()
-        )
+        response_data = {
+            'success': True,
+            'message': 'News articles collected successfully',
+            'statistics': stats,
+            'request': request.to_dict()
+        }
+        
+        # Add job_id to response if provided
+        if job_id:
+            response_data['job_id'] = job_id
         
         logger.info("=" * 60)
         logger.info("✅ Lambda execution completed successfully")
         logger.info("=" * 60)
         
-        return format_lambda_response(200, response)
+        return format_lambda_response(200, response_data)
         
     except ValueError as e:
         logger.error(f"❌ Validation error: {e}")
-        response = CollectNewsResponse.error_response(
-            error='ValidationError',
-            message=str(e),
-            request_data=event if isinstance(event, dict) else {}
-        )
-        return format_lambda_response(400, response)
+        error_response = {
+            'success': False,
+            'error': 'ValidationError',
+            'message': str(e),
+            'request': event if isinstance(event, dict) else {}
+        }
+        return format_lambda_response(400, error_response)
         
     except Exception as e:
         logger.error(f"❌ Execution failed: {e}", exc_info=True)
-        response = CollectNewsResponse.error_response(
-            error='InternalServerError',
-            message=str(e),
-            request_data=event if isinstance(event, dict) else {}
-        )
-        return format_lambda_response(500, response)
+        error_response = {
+            'success': False,
+            'error': 'InternalServerError',
+            'message': str(e),
+            'request': event if isinstance(event, dict) else {}
+        }
+        return format_lambda_response(500, error_response)
 
 
-def _collect_news(request: CollectNewsRequest) -> Dict[str, Any]:
+def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, Any]:
     """
     Execute news collection workflow.
     
     Args:
         request: Validated CollectNewsRequest
+        job_id: Optional job identifier for grouping news articles
         
     Returns:
         Statistics dictionary
@@ -120,6 +138,8 @@ def _collect_news(request: CollectNewsRequest) -> Dict[str, Any]:
     logger.info(f"🎯 Collecting news for brand: {request.brand}")
     logger.info(f"   Search type: {request.search_type}")
     logger.info(f"   Limit: {request.limit}")
+    if job_id:
+        logger.info(f"   Job ID: {job_id}")
     
     # Get NewsAPI credentials from Secrets Manager
     logger.info("🔐 Retrieving NewsAPI credentials...")
@@ -135,8 +155,8 @@ def _collect_news(request: CollectNewsRequest) -> Dict[str, Any]:
     api_client = NewsAPIClient(newsapi_key)
     logger.info("✅ Initialized NewsAPI client")
     
-    # Initialize repository
-    repository = NewsArticleRepository()
+    # Initialize repository with job_id support
+    repository = NewsArticleRepository(job_id=job_id)
     logger.info("✅ Initialized NewsArticle repository")
     
     # Execute use case

@@ -29,17 +29,21 @@ class DynamoDBReviewRepository(ReviewRepository):
         GSI: brand-created_at-index for querying by brand
     """
     
-    def __init__(self, table_name: Optional[str] = None):
+    def __init__(self, table_name: Optional[str] = None, job_id: Optional[str] = None):
         """
         Initialize repository.
         
         Args:
             table_name: DynamoDB table name (defaults to env var TABLE_NAME)
+            job_id: Optional job identifier for grouping reviews (for orchestration)
         """
         self.table_name = table_name or os.environ.get('TABLE_NAME', 'ReviewsTable')
+        self.job_id = job_id
         self.dynamodb = boto3.resource('dynamodb')
         self.table = self.dynamodb.Table(self.table_name)
         logger.info(f"Initialized DynamoDB repository with table: {self.table_name}")
+        if job_id:
+            logger.info(f"  Job ID: {job_id}")
     
     def save(self, review: Review) -> bool:
         """

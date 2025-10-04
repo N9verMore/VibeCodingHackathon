@@ -41,7 +41,7 @@ def lambda_handler(event, context):
     For Trustpilot (DataForSEO): Returns 202 Accepted immediately after task creation
     For other sources (SerpAPI): Returns 200 OK with results
     
-    Supports 2 invocation methods:
+    Supports 3 invocation methods:
     
     1️⃣ API Gateway (HTTP POST)
     ---------------------------
@@ -50,13 +50,18 @@ def lambda_handler(event, context):
         "source": "trustpilot",
         "app_identifier": "www.zara.com",
         "brand": "zara",
-        "limit": 40
+        "limit": 40,
+        "job_id": "job_20251004_abc123" (optional)
     }
     
     2️⃣ Direct Lambda Invoke
     ------------------------
     aws lambda invoke --function-name serpapi-collector-lambda \
       --payload '{"source":"trustpilot","app_identifier":"www.zara.com","brand":"zara"}'
+    
+    3️⃣ Step Functions Invoke (NEW)
+    -------------------------------
+    Called from Step Functions with job_id for orchestration
     
     Args:
         event: Event data (format depends on invocation method)
@@ -71,51 +76,64 @@ def lambda_handler(event, context):
     logger.info(f"Event: {json.dumps(event, default=str)}")
     
     try:
+        # Extract job_id if provided (for Step Functions orchestration)
+        job_id = event.get('job_id') if isinstance(event, dict) else None
+        if job_id:
+            logger.info(f"🔖 Job ID: {job_id}")
+        
         # 🔍 Parse and validate request
         request = parse_lambda_event(event)
         logger.info(f"✅ Parsed request: {request.to_dict()}")
         
         # 🚀 Execute collection (sync for all sources)
-        stats = _collect_reviews(request)
+        stats = _collect_reviews(request, job_id=job_id)
         
         # 📊 Format success response
-        response = CollectReviewsResponse.success_response(
-            message='Reviews collected successfully',
-            statistics=stats,
-            request_data=request.to_dict()
-        )
+        response_data = {
+            'success': True,
+            'message': 'Reviews collected successfully',
+            'statistics': stats,
+            'request': request.to_dict()
+        }
+        
+        # Add job_id to response if provided
+        if job_id:
+            response_data['job_id'] = job_id
         
         logger.info("=" * 60)
         logger.info("✅ Lambda execution completed successfully")
         logger.info("=" * 60)
         
-        return format_lambda_response(200, response)
+        return format_lambda_response(200, response_data)
         
     except ValueError as e:
         logger.error(f"❌ Validation error: {e}")
-        response = CollectReviewsResponse.error_response(
-            error='ValidationError',
-            message=str(e),
-            request_data=event if isinstance(event, dict) else {}
-        )
-        return format_lambda_response(400, response)
+        error_response = {
+            'success': False,
+            'error': 'ValidationError',
+            'message': str(e),
+            'request': event if isinstance(event, dict) else {}
+        }
+        return format_lambda_response(400, error_response)
         
     except Exception as e:
         logger.error(f"❌ Execution failed: {e}", exc_info=True)
-        response = CollectReviewsResponse.error_response(
-            error='InternalServerError',
-            message=str(e),
-            request_data=event if isinstance(event, dict) else {}
-        )
-        return format_lambda_response(500, response)
+        error_response = {
+            'success': False,
+            'error': 'InternalServerError',
+            'message': str(e),
+            'request': event if isinstance(event, dict) else {}
+        }
+        return format_lambda_response(500, error_response)
 
 
-def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
+def _collect_reviews(request: CollectReviewsRequest, job_id: str = None) -> Dict[str, Any]:
     """
     Execute review collection workflow.
     
     Args:
         request: Validated CollectReviewsRequest
+        job_id: Optional job identifier for grouping reviews
         
     Returns:
         Statistics dictionary
@@ -126,6 +144,8 @@ def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
     limit = request.limit
     
     logger.info(f"🎯 Collecting reviews from {source} for {brand} (app: {app_identifier})")
+    if job_id:
+        logger.info(f"   Job ID: {job_id}")
     
     # Get API credentials from Secrets Manager
     logger.info("🔐 Retrieving API credentials...")
@@ -157,8 +177,8 @@ def _collect_reviews(request: CollectReviewsRequest) -> Dict[str, Any]:
     
     logger.info(f"✅ Initialized {api_client.__class__.__name__}")
     
-    # Initialize repository
-    repository = DynamoDBReviewRepository()
+    # Initialize repository with job_id support
+    repository = DynamoDBReviewRepository(job_id=job_id)
     logger.info("✅ Initialized DynamoDB repository")
     
     # Execute use case
