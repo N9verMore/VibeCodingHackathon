@@ -51,11 +51,15 @@ class OpenAIService:
             result = response.choices[0].message.content
             parsed = json.loads(result)
 
+            # Fallback мапінг
+            sentiment = self._normalize_sentiment(parsed["sentiment"])
+            severity = self._normalize_severity(parsed["severity"])
+
             return LLMAnalysis(
-                sentiment=parsed["sentiment"],
+                sentiment=sentiment,
                 description=parsed["description"],
-                categories=parsed["categories"],  # Тепер масив
-                severity=parsed["severity"]
+                categories=parsed["categories"],
+                severity=severity
             )
 
         except Exception as e:
@@ -103,11 +107,16 @@ class OpenAIService:
             # Парсимо масив результатів
             analyses = []
             for item in parsed["reviews"]:
+                # Fallback мапінг для sentiment (якщо LLM все ж таки відповів неправильно)
+                sentiment = self._normalize_sentiment(item["sentiment"])
+                # Fallback мапінг для severity
+                severity = self._normalize_severity(item["severity"])
+                
                 analyses.append(LLMAnalysis(
-                    sentiment=item["sentiment"],
+                    sentiment=sentiment,
                     description=item["description"],
                     categories=item["categories"],
-                    severity=item["severity"]
+                    severity=severity
                 ))
 
             # Перевіряємо що кількість результатів співпадає з кількістю відгуків
@@ -139,12 +148,16 @@ class OpenAIService:
 Категорії (може бути кілька):
 оплата, інтерфейс, продуктивність, підтримка, функціональність, баги, дизайн, безпека, стабільність, інше
 
+КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
+- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
+
 Відповідай ТІЛЬКИ у форматі JSON:
 {
-  "sentiment": "позитивний|негативний|нейтральний",
+  "sentiment": "позитивний",
   "description": "короткий опис того, на що скаржиться або що хвалить користувач",
   "categories": ["категорія1", "категорія2"],
-  "severity": "low|medium|high|critical"
+  "severity": "low"
 }"""
 
     def _get_batch_system_prompt(self) -> str:
@@ -164,14 +177,18 @@ Severity рівні:
 - high: серйозні проблеми (втрата даних, проблеми з оплатою)
 - critical: креши, непрацездатність, проблеми безпеки
 
+КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
+- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
+
 ВІДПОВІДАЙ ТІЛЬКИ у форматі JSON:
 {
   "reviews": [
     {
-      "sentiment": "...",
+      "sentiment": "позитивний",
       "description": "...",
       "categories": [...],
-      "severity": "..."
+      "severity": "low"
     },
     ...
   ]
@@ -222,3 +239,65 @@ Severity рівні:
             prompt_parts.append(f"Дата: {review.created_at.isoformat()}")
 
         return "\n".join(prompt_parts)
+
+    def _normalize_sentiment(self, sentiment: str) -> str:
+        """
+        Нормалізує sentiment до правильного формату (українською)
+        
+        Args:
+            sentiment: Сирий sentiment від LLM
+            
+        Returns:
+            str: Нормалізований sentiment
+        """
+        sentiment_lower = sentiment.lower().strip()
+        
+        # Мапінг різних варіантів на українські значення
+        sentiment_map = {
+            # Українська (правильна)
+            "позитивний": "позитивний",
+            "негативний": "негативний",
+            "нейтральний": "нейтральний",
+            # Англійська
+            "positive": "позитивний",
+            "negative": "негативний",
+            "neutral": "нейтральний",
+            # Іспанська
+            "positivo": "позитивний",
+            "negativo": "негативний",
+            "neutro": "нейтральний",
+            # Російська
+            "позитивный": "позитивний",
+            "негативный": "негативний",
+            "нейтральный": "нейтральний",
+        }
+        
+        result = sentiment_map.get(sentiment_lower)
+        
+        if result:
+            if sentiment_lower != result:
+                logger.warning(f"Normalized sentiment '{sentiment}' -> '{result}'")
+            return result
+        else:
+            logger.error(f"Unknown sentiment value: '{sentiment}', defaulting to 'нейтральний'")
+            return "нейтральний"
+    
+    def _normalize_severity(self, severity: str) -> str:
+        """
+        Нормалізує severity до правильного формату
+        
+        Args:
+            severity: Сирий severity від LLM
+            
+        Returns:
+            str: Нормалізований severity
+        """
+        severity_lower = severity.lower().strip()
+        
+        valid_severities = {"low", "medium", "high", "critical"}
+        
+        if severity_lower in valid_severities:
+            return severity_lower
+        else:
+            logger.error(f"Unknown severity value: '{severity}', defaulting to 'medium'")
+            return "medium"
