@@ -37,8 +37,9 @@ class LLMAnalysis(BaseModel):
 class ProcessedReview(BaseModel):
     """Оброблений відгук"""
     id: str
-    brand: str  # Додали brand для delivery
     source: ReviewSource
+    brand: str
+    author: Optional[str] = None  # Автор відгуку
     backlink: str
     text: Optional[str]
     rating: Optional[int] = None  # Optional для news

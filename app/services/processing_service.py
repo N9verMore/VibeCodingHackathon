@@ -112,7 +112,8 @@ class ReviewProcessingService:
                     processed_reviews.append(ProcessedReview(
                         id=review.id,
                         source=review.source,
-                        brand=review.brand,  # Додали brand
+                        brand=review.brand,
+                        author=review.author_hint,  # Додали author
                         backlink=review.backlink,
                         text=review.text,
                         rating=review.rating,
@@ -134,7 +135,8 @@ class ReviewProcessingService:
                         processed_reviews.append(ProcessedReview(
                             id=news_item.id,
                             source=news_item.source,
-                            brand=news_item.brand,  # Додали brand
+                            brand=news_item.brand,
+                            author=news_item.author_hint,  # Додали author
                             backlink=news_item.backlink,
                             text=news_item.text,
                             rating=None,  # News не мають rating

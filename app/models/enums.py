@@ -14,9 +14,9 @@ class ReviewSource(str, Enum):
 
 class Sentiment(str, Enum):
     """Настрій відгуку"""
-    positive = "позитивний"
-    negative = "негативний"
-    neutral = "нейтральний"
+    positive = "positive"
+    negative = "negative"
+    neutral = "neutral"
 
 
 class Severity(str, Enum):

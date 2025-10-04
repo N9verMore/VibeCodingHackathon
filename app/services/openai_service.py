@@ -107,9 +107,7 @@ class OpenAIService:
             # Парсимо масив результатів
             analyses = []
             for item in parsed["reviews"]:
-                # Fallback мапінг для sentiment (якщо LLM все ж таки відповів неправильно)
                 sentiment = self._normalize_sentiment(item["sentiment"])
-                # Fallback мапінг для severity
                 severity = self._normalize_severity(item["severity"])
 
                 analyses.append(LLMAnalysis(
@@ -119,7 +117,6 @@ class OpenAIService:
                     severity=severity
                 ))
 
-            # Перевіряємо що кількість результатів співпадає з кількістю відгуків
             if len(analyses) != len(reviews):
                 logger.error(f"Batch analysis mismatch: expected {len(reviews)}, got {len(analyses)}")
                 raise Exception(f"Batch analysis returned {len(analyses)} results for {len(reviews)} reviews")
@@ -139,6 +136,17 @@ class OpenAIService:
 Твоє завдання: визначити настрій відгуку, описати про що користувач пише, 
 категоризувати відгук та визначити рівень критичності.
 
+ВИЗНАЧЕННЯ SENTIMENT (ДУЖЕ ВАЖЛИВО):
+- "positive": Користувач ХВАЛИТЬ продукт, виражає задоволення, рекомендує, пише про позитивний досвід
+- "negative": Користувач КРИТИКУЄ продукт, скаржиться на проблеми, виражає незадоволення
+- "neutral": У відгуку НЕМАЄ ні критики, ні вихваляння. Просто констатація фактів, нейтральна згадка, питання
+
+Приклади:
+- "Чудовий додаток, все працює відмінно!" → positive
+- "Не можу оплатити, постійно помилка" → negative  
+- "Використовую для роботи" → neutral (просто факт, без оцінки)
+- "Де знайти налаштування?" → neutral (питання без критики)
+
 Рівні критичності (severity):
 - "low": Косметичні проблеми, побажання, дрібні незручності (колір кнопки, розмір шрифту, дизайн)
 - "medium": Незручності в інтерфейсі, мінорні баги, повільна робота (складна навігація, повільне завантаження)
@@ -149,12 +157,12 @@ class OpenAIService:
 оплата, інтерфейс, продуктивність, підтримка, функціональність, баги, дизайн, безпека, стабільність, інше
 
 КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
-- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- sentiment: ТІЛЬКИ 'positive' АБО 'negative' АБО 'neutral' (англійською мовою!)
 - severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
 
 Відповідай ТІЛЬКИ у форматі JSON:
 {
-  "sentiment": "позитивний",
+  "sentiment": "positive",
   "description": "короткий опис того, на що скаржиться або що хвалить користувач",
   "categories": ["категорія1", "категорія2"],
   "severity": "low"
@@ -166,10 +174,15 @@ class OpenAIService:
 Твоє завдання: проаналізувати КІЛЬКА відгуків одночасно.
 
 Для КОЖНОГО відгуку визнач:
-- sentiment: позитивний/негативний/нейтральний
+- sentiment: positive/negative/neutral
 - description: короткий опис
 - categories: масив категорій (оплата, інтерфейс, продуктивність, підтримка, функціональність, баги, дизайн, безпека, стабільність, інше)
 - severity: low/medium/high/critical
+
+ВИЗНАЧЕННЯ SENTIMENT (КРИТИЧНО ВАЖЛИВО):
+- "positive": Користувач ХВАЛИТЬ продукт, виражає задоволення
+- "negative": Користувач КРИТИКУЄ продукт, скаржиться
+- "neutral": У відгуку НЕМАЄ ні критики, ні вихваляння (просто факти, питання)
 
 Severity рівні:
 - low: косметичні проблеми (колір, дизайн)
@@ -178,14 +191,14 @@ Severity рівні:
 - critical: креши, непрацездатність, проблеми безпеки
 
 КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
-- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- sentiment: ТІЛЬКИ 'positive' АБО 'negative' АБО 'neutral' (англійською мовою!)
 - severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
 
 ВІДПОВІДАЙ ТІЛЬКИ у форматі JSON:
 {
   "reviews": [
     {
-      "sentiment": "позитивний",
+      "sentiment": "positive",
       "description": "...",
       "categories": [...],
       "severity": "low"
@@ -198,15 +211,6 @@ Severity рівні:
 Поверни результат У ТОМУ Ж ПОРЯДКУ, як відгуки у запиті."""
 
     def _build_prompt(self, review: ReviewFromDB) -> str:
-        """
-        Будує промпт для аналізу відгуку
-
-        Args:
-            review: Відгук для аналізу
-
-        Returns:
-            str: Промпт для LLM
-        """
         return f"""
 Джерело: {review.source}
 Оцінка: {review.rating}/5
@@ -218,15 +222,6 @@ Severity рівні:
 """
 
     def _build_batch_prompt(self, reviews: List[ReviewFromDB]) -> str:
-        """
-        Будує batch промпт для кількох відгуків
-
-        Args:
-            reviews: Список відгуків
-
-        Returns:
-            str: Batch промпт
-        """
         prompt_parts = [f"Проаналізуй {len(reviews)} відгуків та поверни результат у JSON форматі.\n"]
 
         for idx, review in enumerate(reviews, 1):
@@ -241,59 +236,36 @@ Severity рівні:
         return "\n".join(prompt_parts)
 
     def _normalize_sentiment(self, sentiment: str) -> str:
-        """
-        Нормалізує sentiment до правильного формату (українською)
-        
-        Args:
-            sentiment: Сирий sentiment від LLM
-            
-        Returns:
-            str: Нормалізований sentiment
-        """
+        """Нормалізує sentiment до англійської"""
         sentiment_lower = sentiment.lower().strip()
-
-        # Мапінг різних варіантів на українські значення
+        
         sentiment_map = {
-            # Українська (правильна)
-            "позитивний": "позитивний",
-            "негативний": "негативний",
-            "нейтральний": "нейтральний",
-            # Англійська
-            "positive": "позитивний",
-            "negative": "негативний",
-            "neutral": "нейтральний",
-            # Іспанська
-            "positivo": "позитивний",
-            "negativo": "негативний",
-            "neutro": "нейтральний",
-            # Російська
-            "позитивный": "позитивний",
-            "негативный": "негативний",
-            "нейтральный": "нейтральний",
+            "positive": "positive",
+            "negative": "negative",
+            "neutral": "neutral",
+            "позитивний": "positive",
+            "негативний": "negative",
+            "нейтральний": "neutral",
+            "позитивный": "positive",
+            "негативный": "negative",
+            "нейтральный": "neutral",
+            "positivo": "positive",
+            "negativo": "negative",
+            "neutro": "neutral",
         }
-
+        
         result = sentiment_map.get(sentiment_lower)
-
+        
         if result:
             if sentiment_lower != result:
                 logger.warning(f"Normalized sentiment '{sentiment}' -> '{result}'")
             return result
         else:
-            logger.error(f"Unknown sentiment value: '{sentiment}', defaulting to 'нейтральний'")
-            return "нейтральний"
+            logger.error(f"Unknown sentiment value: '{sentiment}', defaulting to 'neutral'")
+            return "neutral"
 
     def _normalize_severity(self, severity: str) -> str:
-        """
-        Нормалізує severity до правильного формату
-        
-        Args:
-            severity: Сирий severity від LLM
-            
-        Returns:
-            str: Нормалізований severity
-        """
         severity_lower = severity.lower().strip()
-
         valid_severities = {"low", "medium", "high", "critical"}
 
         if severity_lower in valid_severities:
@@ -303,15 +275,6 @@ Severity рівні:
             return "medium"
 
     async def analyze_news(self, url: str) -> LLMAnalysis:
-        """
-        Аналізує новину за URL з використанням web search
-        
-        Args:
-            url: URL новини
-            
-        Returns:
-            LLMAnalysis: Результат аналізу
-        """
         try:
             logger.info(f"Analyzing news from URL: {url}")
 
@@ -349,10 +312,14 @@ Severity рівні:
             raise Exception(f"Failed to analyze news: {str(e)}")
 
     def _get_news_system_prompt(self) -> str:
-        """Системний промпт для аналізу новин"""
         return """Ти - експерт з аналізу новин про компанію/бренд.
 Твоє завдання: прочитати новину за посиланням, визначити настрій, описати про що новина,
 категоризувати та визначити рівень критичності для репутації бренду.
+
+ВИЗНАЧЕННЯ SENTIMENT (КРИТИЧНО ВАЖЛИВО):
+- "positive": Новина ПОЗИТИВНА для бренду, хвалить компанію, розповідає про успіхи
+- "negative": Новина НЕГАТИВНА для бренду, критикує компанію, описує проблеми/скандали
+- "neutral": Новина НЕЙТРАЛЬНА - просто факти без оцінки, констатація подій
 
 Рівні критичності (severity):
 - "low": Нейтральна згадка, позитивна новина, незначні події
@@ -364,12 +331,12 @@ Severity рівні:
 репутація, продукт, фінанси, юридичні, скандал, інновації, позитивні, партнерство, інше
 
 КРИТИЧНО ВАЖЛИВО - Використовуй ТОЧНО ЦІ ЗНАЧЕННЯ:
-- sentiment: ТІЛЬКИ 'позитивний' АБО 'негативний' АБО 'нейтральний' (українською мовою!)
+- sentiment: ТІЛЬКИ 'positive' АБО 'negative' АБО 'neutral' (англійською мовою!)
 - severity: ТІЛЬКИ 'low' АБО 'medium' АБО 'high' АБО 'critical' (англійською!)
 
 Відповідай ТІЛЬКИ у форматі JSON:
 {
-  "sentiment": "позитивний",
+  "sentiment": "positive",
   "description": "короткий опис про що новина та її вплив на репутацію бренду",
   "categories": ["категорія1", "категорія2"],
   "severity": "low"
