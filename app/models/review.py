@@ -2,9 +2,9 @@
 # FILE: app/models/review.py
 # ============================================
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
-from .enums import ReviewSource, Sentiment
+from .enums import ReviewSource, Sentiment, Severity
 
 
 class ReviewFromDB(BaseModel):
@@ -30,7 +30,8 @@ class LLMAnalysis(BaseModel):
     """Результат аналізу LLM"""
     sentiment: Sentiment
     description: str
-    category: str
+    categories: List[str]  # Масив категорій
+    severity: Severity
 
 
 class ProcessedReview(BaseModel):
@@ -43,5 +44,6 @@ class ProcessedReview(BaseModel):
     created_at: datetime
     sentiment: Sentiment
     description: str
-    category: str
+    categories: List[str]  # Масив категорій
+    severity: Severity
     is_processed: bool = True

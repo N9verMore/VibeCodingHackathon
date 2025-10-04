@@ -71,7 +71,8 @@ class ReviewProcessingService:
                     created_at=review.created_at,
                     sentiment=analysis.sentiment,
                     description=analysis.description,
-                    category=analysis.category,
+                    categories=analysis.categories,  # Масив
+                    severity=analysis.severity,
                     is_processed=True
                 )
 

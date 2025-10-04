@@ -59,6 +59,14 @@ class MockDeliveryService:
             "trustpilot": "⭐"
         }
 
+        # Визначаємо емодзі для severity
+        severity_emoji = {
+            "low": "🟢",
+            "medium": "🟡",
+            "high": "🟠",
+            "critical": "🔴"
+        }
+
         # Кольорові індикатори рейтингу
         rating_stars = "⭐" * review.rating + "☆" * (5 - review.rating)
 
@@ -78,7 +86,9 @@ class MockDeliveryService:
         logger.info(f"│")
         logger.info(f"│ {sentiment_emoji.get(review.sentiment.value, '❓')} Настрій: {review.sentiment.value.upper()}")
         logger.info(f"│")
-        logger.info(f"│ 🏷️  Категорія: {review.category}")
+        logger.info(f"│ 🏷️  Категорії: {', '.join(review.categories)}")
+        logger.info(f"│")
+        logger.info(f"│ {severity_emoji.get(review.severity.value, '⚪')} Критичність: {review.severity.value.upper()}")
         logger.info(f"│")
         logger.info(f"│ 💭 Опис від LLM:")
         logger.info(f"│    {self._wrap_text(review.description, 70)}")
@@ -136,8 +146,14 @@ class MockDeliveryService:
         # Статистика по категоріях
         category_stats = {}
         for review in self.delivered_reviews:
-            category = review.category
-            category_stats[category] = category_stats.get(category, 0) + 1
+            for category in review.categories:  # Тепер масив
+                category_stats[category] = category_stats.get(category, 0) + 1
+
+        # Статистика по severity
+        severity_stats = {}
+        for review in self.delivered_reviews:
+            severity = review.severity.value
+            severity_stats[severity] = severity_stats.get(severity, 0) + 1
 
         # Середній рейтинг
         avg_rating = sum(r.rating for r in self.delivered_reviews) / len(self.delivered_reviews)
@@ -148,6 +164,7 @@ class MockDeliveryService:
             "sentiment_distribution": sentiment_stats,
             "source_distribution": source_stats,
             "category_distribution": category_stats,
+            "severity_distribution": severity_stats,
             "delivered_ids": [r.id for r in self.delivered_reviews]
         }
 

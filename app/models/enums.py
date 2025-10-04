@@ -16,3 +16,11 @@ class Sentiment(str, Enum):
     positive = "позитивний"
     negative = "негативний"
     neutral = "нейтральний"
+
+
+class Severity(str, Enum):
+    """Рівень критичності відгуку"""
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"

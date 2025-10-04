@@ -37,9 +37,11 @@ class DeliveryService:
                     # Перетворюємо enum в string
                     review_dict['source'] = review.source.value
                     review_dict['sentiment'] = review.sentiment.value
+                    review_dict['severity'] = review.severity.value  # Нове поле
                     # Перетворюємо datetime в ISO string
                     if isinstance(review_dict.get('created_at'), datetime):
                         review_dict['created_at'] = review.created_at.isoformat()
+                    # categories вже масив, нічого не робимо
                     reviews_data.append(review_dict)
                 
                 # Формуємо payload як очікує teammate
