@@ -1,12 +1,13 @@
 # Review Collector 🚀
 
-Serverless система для збору відгуків з **будь-якого додатку** через SerpAPI та DataForSEO - App Store, Google Play та Trustpilot.
+Serverless система для збору **відгуків** та **новин** через SerpAPI, DataForSEO та NewsAPI.
 
 ## 🎯 Особливості
 
-- ✅ **Збір відгуків з будь-якого додатку** - не тільки свого!
-- ✅ **Два API провайдери**: SerpAPI (App Store, Google Play) + DataForSEO (Trustpilot)
-- ✅ **HTTP API** - збирайте відгуки через простий POST запит
+- ✅ **Збір відгуків** з App Store, Google Play, Trustpilot
+- ✅ **Збір новин** 🆕 - моніторинг медіа через NewsAPI
+- ✅ **Три API провайдери**: SerpAPI + DataForSEO + NewsAPI
+- ✅ **HTTP API** - два незалежні endpoints
 - ✅ **Ручний тригер** - скрипти для інтерактивного запуску
 - ✅ **Idempotent** - відсутність дублікатів через `content_hash`
 - ✅ **Serverless** - AWS Lambda + DynamoDB + API Gateway
@@ -26,6 +27,10 @@ Serverless система для збору відгуків з **будь-як�
 # DataForSEO (для Trustpilot)
 # Зареєструватись: https://dataforseo.com/
 # Credentials: login + password
+
+# NewsAPI 🆕 (для новин)
+# Зареєструватись: https://newsapi.org/register
+# Free tier: 100 requests/day
 ```
 
 ### 2. Setup
@@ -38,7 +43,8 @@ aws secretsmanager put-secret-value \
   --secret-id review-collector/credentials \
   --secret-string '{
     "serpapi": {"api_key": "YOUR_SERPAPI_KEY"},
-    "dataforseo": {"login": "your@email.com", "password": "your_password"}
+    "dataforseo": {"login": "your@email.com", "password": "your_password"},
+    "newsapi": {"api_key": "YOUR_NEWSAPI_KEY"}
   }'
 
 # Встановити CDK залежності
@@ -51,20 +57,12 @@ pip install -r requirements.txt
 cdk deploy
 ```
 
-### 3. Зібрати відгуки!
+### 3. Збирати дані!
+
+#### 📱 Відгуки (Reviews)
 
 ```bash
-# Метод 1: Інтерактивне меню
-./scripts/collect_reviews.sh
-
-# Метод 2: Python CLI
-python scripts/manual_trigger.py \
-  --source appstore \
-  --app-id 544007664 \
-  --brand telegram \
-  --limit 50
-
-# Метод 3: HTTP API
+# HTTP API
 curl -X POST "https://YOUR_API_URL/collect-reviews" \
   -H "Content-Type: application/json" \
   -d '{
@@ -75,13 +73,33 @@ curl -X POST "https://YOUR_API_URL/collect-reviews" \
   }'
 ```
 
+#### 🗞️ Новини (News) 🆕
+
+```bash
+# HTTP API
+curl -X POST "https://YOUR_API_URL/collect-news" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brand": "Tesla",
+    "limit": 50,
+    "search_type": "everything",
+    "language": "en"
+  }'
+```
+
 ---
 
 ## 📖 Повна Документація
 
+### Reviews Collection
 ➡️ **[API_INSTRUCTIONS.md](./API_INSTRUCTIONS.md)** - Інструкція користувача API  
 ➡️ **[SERPAPI_GUIDE.md](./SERPAPI_GUIDE.md)** - Гайд по SerpAPI (App Store, Google Play)  
 ➡️ **[DATAFORSEO_GUIDE.md](./DATAFORSEO_GUIDE.md)** - Гайд по DataForSEO (Trustpilot)  
+
+### News Collection 🆕
+➡️ **[NEWSAPI_GUIDE.md](./NEWSAPI_GUIDE.md)** - Гайд по NewsAPI (новини)  
+
+### Infrastructure
 ➡️ **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Інструкція деплою  
 ➡️ **[DATABASE_ACCESS.md](./DATABASE_ACCESS.md)** - Доступ до даних у DynamoDB
 
@@ -90,27 +108,27 @@ curl -X POST "https://YOUR_API_URL/collect-reviews" \
 ## 🏗️ Архітектура
 
 ```
-┌─────────────────────────────────────────────┐
-│     Тригери (3 способи)                     │
-├──────────────┬──────────────┬───────────────┤
-│  HTTP API    │  Bash Script │  Python CLI   │
-│ (API Gateway)│              │               │
-└──────┬───────┴──────┬───────┴───────┬───────┘
-       │              │               │
-       └──────────────┼───────────────┘
-                      ▼
-         ┌─────────────────────────┐
-         │   Lambda Function       │
-         │  (Unified Collector)    │
-         └────────┬────────────────┘
-                  │
-       ┌──────────┴──────────┐
-       ▼                     ▼
-┌─────────────┐      ┌─────────────┐
-│ API Clients │      │  DynamoDB   │
-│ - SerpAPI   │      │ ReviewsTable│
-│ - DataForSEO│      │             │
-└─────────────┘      └─────────────┘
+┌──────────────────────────────────────────────────┐
+│              API Gateway                          │
+├─────────────────────┬────────────────────────────┤
+│  /collect-reviews   │  /collect-news 🆕          │
+└──────────┬──────────┴────────────┬───────────────┘
+           ▼                       ▼
+  ┌──────────────────┐    ┌──────────────────┐
+  │ Review Lambda    │    │ News Lambda 🆕   │
+  │ (SerpAPI +       │    │ (NewsAPI)        │
+  │  DataForSEO)     │    │                  │
+  └────────┬─────────┘    └────────┬─────────┘
+           │                       │
+           └───────────┬───────────┘
+                       ▼
+              ┌─────────────────┐
+              │   DynamoDB      │
+              │ ReviewsTableV2  │
+              │                 │
+              │ - Reviews (pk)  │
+              │ - News (news#)  │
+              └─────────────────┘
 ```
 
 ---
@@ -120,16 +138,23 @@ curl -X POST "https://YOUR_API_URL/collect-reviews" \
 ```
 review_collector/
 ├── src/
-│   ├── serpapi_collector/        # 🆕 Unified SerpAPI collector
+│   ├── serpapi_collector/        # Reviews collector
 │   │   ├── handler.py            # Lambda entry point
 │   │   ├── serpapi_base_client.py
 │   │   ├── serpapi_appstore_client.py
 │   │   ├── serpapi_googleplay_client.py
-│   │   ├── serpapi_trustpilot_client.py
+│   │   └── requirements.txt
+│   │
+│   ├── news_collector/           # 🆕 News collector
+│   │   ├── handler.py            # Lambda entry point
+│   │   ├── newsapi_client.py     # NewsAPI integration
+│   │   ├── news_article.py       # Domain entity
+│   │   ├── news_repository.py    # DynamoDB adapter
+│   │   ├── collect_news_use_case.py
 │   │   └── requirements.txt
 │   │
 │   └── shared/                   # Shared infrastructure
-│       ├── domain/               # Review entities
+│       ├── domain/               # Domain entities
 │       ├── application/          # Use cases
 │       └── infrastructure/       # DynamoDB, Secrets
 │

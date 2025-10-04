@@ -29,6 +29,9 @@ class SecretsClient:
             "login": "your_email@example.com",
             "password": "your_password"
         },
+        "newsapi": {
+            "api_key": "your_newsapi_api_key"
+        },
         "appstore": {
             "key_id": "...",
             "issuer_id": "...",
@@ -186,4 +189,23 @@ class SecretsClient:
                 raise ValueError(f"Missing required DataForSEO credential: {key}")
         
         return dataforseo
+    
+    def get_newsapi_key(self) -> str:
+        """
+        Get NewsAPI key.
+        
+        Returns:
+            NewsAPI API key string
+        """
+        credentials = self.get_all_credentials()
+        
+        if 'newsapi' not in credentials:
+            raise ValueError("NewsAPI credentials not found in secret")
+        
+        newsapi = credentials['newsapi']
+        
+        if 'api_key' not in newsapi:
+            raise ValueError("Missing required NewsAPI credential: api_key")
+        
+        return newsapi['api_key']
 

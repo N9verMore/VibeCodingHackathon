@@ -61,8 +61,16 @@ class ReviewCollectorStack(Stack):
             shared_layer=shared_layer
         )
         
-        # 5. Create API Gateway
-        api = self._create_api_gateway(serpapi_lambda, reviews_table)
+        # 5. Create Lambda Function for News collection
+        news_lambda = self._create_news_lambda(
+            base_path=base_path,
+            table=reviews_table,
+            secret=secret,
+            shared_layer=shared_layer
+        )
+        
+        # 6. Create API Gateway
+        api = self._create_api_gateway(serpapi_lambda, news_lambda, reviews_table)
     
     def _create_dynamodb_table(self) -> dynamodb.Table:
         """Create DynamoDB table for storing reviews with pk as primary key."""
@@ -257,13 +265,62 @@ class ReviewCollectorStack(Stack):
         
         return fn
     
-    def _create_api_gateway(self, lambda_fn: lambda_.Function, table: dynamodb.Table) -> apigateway.RestApi:
+    def _create_news_lambda(
+        self,
+        base_path: Path,
+        table: dynamodb.Table,
+        secret: secretsmanager.Secret,
+        shared_layer: lambda_.LayerVersion
+    ) -> lambda_.Function:
+        """Create Lambda function for NewsAPI-based collection."""
+        src_path = str(base_path / "news_collector")
+        
+        fn = lambda_.Function(
+            self,
+            "NewsCollectorLambda",
+            function_name="news-collector-lambda",
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="handler.lambda_handler",
+            code=lambda_.Code.from_asset(
+                src_path,
+                bundling={
+                    "image": lambda_.Runtime.PYTHON_3_11.bundling_image,
+                    "command": [
+                        "bash", "-c",
+                        "pip install -r requirements.txt -t /asset-output && "
+                        "cp -r . /asset-output/"
+                    ],
+                }
+            ),
+            layers=[shared_layer],
+            timeout=Duration.seconds(120),
+            memory_size=512,
+            environment={
+                "TABLE_NAME": table.table_name,
+                "SECRET_NAME": secret.secret_name,
+                "POWERTOOLS_SERVICE_NAME": "news-collector",
+                "LOG_LEVEL": "INFO",
+            },
+        )
+        
+        # Grant permissions
+        table.grant_read_write_data(fn)
+        secret.grant_read(fn)
+        
+        return fn
+    
+    def _create_api_gateway(
+        self,
+        review_lambda: lambda_.Function,
+        news_lambda: lambda_.Function,
+        table: dynamodb.Table
+    ) -> apigateway.RestApi:
         """Create API Gateway for HTTP access."""
         api = apigateway.RestApi(
             self,
             "ReviewCollectorAPI",
             rest_api_name="Review Collector API",
-            description="API for on-demand review collection via SerpAPI",
+            description="API for on-demand review and news collection",
             deploy_options=apigateway.StageOptions(
                 stage_name="prod",
                 throttling_rate_limit=100,
@@ -271,19 +328,37 @@ class ReviewCollectorStack(Stack):
             ),
         )
         
-        # Integration
-        integration = apigateway.LambdaIntegration(
-            lambda_fn,
+        # Integration for review collection
+        review_integration = apigateway.LambdaIntegration(
+            review_lambda,
             proxy=True,
             allow_test_invoke=True,
         )
         
         # POST /collect-reviews endpoint
-        collect_resource = api.root.add_resource("collect-reviews")
-        collect_resource.add_method("POST", integration)
+        collect_reviews_resource = api.root.add_resource("collect-reviews")
+        collect_reviews_resource.add_method("POST", review_integration)
         
-        # Add CORS
-        collect_resource.add_cors_preflight(
+        # Add CORS for reviews
+        collect_reviews_resource.add_cors_preflight(
+            allow_origins=["*"],
+            allow_methods=["POST", "OPTIONS"],
+            allow_headers=["Content-Type", "Authorization"],
+        )
+        
+        # Integration for news collection
+        news_integration = apigateway.LambdaIntegration(
+            news_lambda,
+            proxy=True,
+            allow_test_invoke=True,
+        )
+        
+        # POST /collect-news endpoint
+        collect_news_resource = api.root.add_resource("collect-news")
+        collect_news_resource.add_method("POST", news_integration)
+        
+        # Add CORS for news
+        collect_news_resource.add_cors_preflight(
             allow_origins=["*"],
             allow_methods=["POST", "OPTIONS"],
             allow_headers=["Content-Type", "Authorization"],
@@ -301,16 +376,30 @@ class ReviewCollectorStack(Stack):
         
         CfnOutput(
             self,
-            "ApiEndpoint",
+            "CollectReviewsEndpoint",
             value=f"{api.url}collect-reviews",
             description="Collect Reviews Endpoint"
         )
         
         CfnOutput(
             self,
-            "LambdaFunctionName",
-            value=lambda_fn.function_name,
-            description="Lambda Function Name"
+            "CollectNewsEndpoint",
+            value=f"{api.url}collect-news",
+            description="Collect News Endpoint"
+        )
+        
+        CfnOutput(
+            self,
+            "ReviewLambdaFunctionName",
+            value=review_lambda.function_name,
+            description="Review Lambda Function Name"
+        )
+        
+        CfnOutput(
+            self,
+            "NewsLambdaFunctionName",
+            value=news_lambda.function_name,
+            description="News Lambda Function Name"
         )
         
         CfnOutput(
