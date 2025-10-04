@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const YOUTUBE_API_KEY = 'AIzaSyA3yx9tfApYSRNOzk4odRWgulWQVz28eVQ';
-const QUERY = 'zara';
+const QUERY = 'flo';
 const MAX_RESULTS = 50; // YouTube API limit per request
 const MAX_PAGES = 10; // Maximum pages to fetch
 

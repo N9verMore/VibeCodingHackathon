@@ -3,36 +3,46 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bug, AlertTriangle, Clock, TrendingUp, Filter, Search, BarChart3 } from 'lucide-react';
+import { fetchStatistics } from '../lib/statistics';
 
 export default function Issues() {
   const [issues, setIssues] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [dataSources, setDataSources] = useState({
+    playStore: true,
+    appStore: true,
+    threads: false,
+    trustpilot: false
+  });
 
   useEffect(() => {
     fetchIssues();
+  }, [dataSources]);
+
+  // Listen for data source updates from Layout
+  useEffect(() => {
+    const handleDataSourceUpdate = (event) => {
+      setDataSources(event.detail);
+    };
+
+    window.addEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    
+    return () => {
+      window.removeEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    };
   }, []);
 
   const fetchIssues = async () => {
     try {
-      // Fetch real issues data from API
-      const response = await fetch('http://10.8.0.5:8000/api/statistics', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const analytics = await fetchStatistics({
+        platforms: dataSources
       });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const apiData = await response.json();
       
       // Transform API data to match our frontend structure
       const transformedIssues = {
-        categories: apiData.top_categories?.map((category, index) => ({
+        categories: analytics.topCategories?.map((category, index) => ({
           id: category.category,
           name: formatCategoryName(category.category),
           count: category.count,

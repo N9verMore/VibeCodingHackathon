@@ -18,6 +18,7 @@ export default function CommentCard({ comment, index = 0 }) {
     const colors = {
       'App Store': 'bg-blue-100 text-blue-800',
       'Play Store': 'bg-green-100 text-green-800',
+      'Trustpilot': 'bg-orange-100 text-orange-800',
       'Threads': 'bg-purple-100 text-purple-800',
       'Twitter': 'bg-sky-100 text-sky-800',
       'Facebook': 'bg-indigo-100 text-indigo-800',
@@ -25,6 +26,26 @@ export default function CommentCard({ comment, index = 0 }) {
       'YouTube': 'bg-red-100 text-red-800'
     };
     return colors[platform] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getCategoryColor = (category) => {
+    // Color mapping for different comment categories
+    const categoryColors = {
+      'fashion': 'bg-pink-100 text-pink-800',
+      'fragrance': 'bg-purple-100 text-purple-800',
+      'quality': 'bg-blue-100 text-blue-800',
+      'service': 'bg-green-100 text-green-800',
+      'shipping': 'bg-yellow-100 text-yellow-800',
+      'returns': 'bg-orange-100 text-orange-800',
+      'pricing': 'bg-red-100 text-red-800',
+      'app': 'bg-indigo-100 text-indigo-800',
+      'website': 'bg-cyan-100 text-cyan-800',
+      'customer_support': 'bg-teal-100 text-teal-800'
+    };
+    
+    // Handle both string and array categories
+    const categoryKey = Array.isArray(category) ? category[0] : category;
+    return categoryColors[categoryKey] || 'bg-gray-100 text-gray-800';
   };
 
   const getSentimentIcon = (sentiment) => {
@@ -48,6 +69,52 @@ export default function CommentCard({ comment, index = 0 }) {
     return date.toLocaleDateString();
   };
 
+  const renderStars = (rating) => {
+    if (!rating) return null;
+    
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <span key={i} className="text-yellow-400 text-sm">★</span>
+      );
+    }
+    
+    if (hasHalfStar) {
+      stars.push(
+        <span key="half" className="text-yellow-400 text-sm">☆</span>
+      );
+    }
+    
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <span key={`empty-${i}`} className="text-gray-300 text-sm">☆</span>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-1">
+        {stars}
+        <span className="text-xs text-gray-600 ml-1">({rating}/5)</span>
+      </div>
+    );
+  };
+
+  const isReviewPlatform = (platform) => {
+    return ['Trustpilot', 'App Store', 'Play Store'].includes(platform);
+  };
+
+  const getReviewUrl = (comment) => {
+    if (comment.platform === 'Trustpilot' && comment.url) {
+      // Ensure Trustpilot URLs go to trustpilot.com
+      return comment.url.replace(/trustpilot\.\w+/, 'trustpilot.com');
+    }
+    return comment.url;
+  };
+
   const SentimentIcon = getSentimentIcon(comment.sentiment);
 
   return (
@@ -55,10 +122,22 @@ export default function CommentCard({ comment, index = 0 }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative"
     >
+      {/* Severity indicator in top left corner */}
+      {comment.severity && (
+        <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold ${
+          comment.severity === 'critical' ? 'bg-red-500 text-white' :
+          comment.severity === 'high' ? 'bg-orange-500 text-white' :
+          comment.severity === 'medium' ? 'bg-yellow-500 text-black' :
+          'bg-green-500 text-white'
+        }`}>
+          {comment.severity.toUpperCase()}
+        </div>
+      )}
+      
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className={`flex items-start justify-between mb-3 ${comment.severity ? 'pt-6' : ''}`}>
         <div className="flex items-center gap-3">
           {comment.platform === 'YouTube' && comment.thumbnail ? (
             <div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0">
@@ -102,9 +181,9 @@ export default function CommentCard({ comment, index = 0 }) {
       {/* Content */}
       <div className="mb-3">
         <h3 className="font-medium text-gray-900 mb-2 text-sm">
-          {comment.platform === 'YouTube' && comment.url ? (
+          {(comment.platform === 'YouTube' || isReviewPlatform(comment.platform)) && comment.url ? (
             <a 
-              href={comment.url} 
+              href={getReviewUrl(comment)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-blue-600 transition-colors"
@@ -118,12 +197,40 @@ export default function CommentCard({ comment, index = 0 }) {
         <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
           {comment.content}
         </p>
+        
+        {/* Display extracted description if available */}
+        {comment.description && (
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md d-flex flex-row"><span className="text-xs text-blue-800 font-medium mb-1 mr-1">Summary:</span><span className="text-xs text-blue-700 leading-relaxed">{comment.description}</span></div>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+      <div className="flex items-center pt-3 border-t border-gray-100">
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          {comment.platform === 'YouTube' ? (
+          {isReviewPlatform(comment.platform) ? (
+            // Reviews go first - show category and other review-specific info
+            <>
+              {comment.category && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {Array.isArray(comment.category) ? (
+                    comment.category.slice(0, 2).map((cat, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(cat)}`}
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(comment.category)}`}>
+                      {comment.category}
+                    </span>
+                  )}
+                </div>
+              )}
+            </>
+          ) : comment.platform === 'YouTube' ? (
+            // YouTube content second
             <>
               <div className="flex items-center gap-1">
                 <ThumbsUp className="h-3 w-3" />
@@ -142,8 +249,27 @@ export default function CommentCard({ comment, index = 0 }) {
                   <span>{comment.viewCount.toLocaleString()}</span>
                 </div>
               )}
+              {comment.category && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {Array.isArray(comment.category) ? (
+                    comment.category.slice(0, 2).map((cat, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(cat)}`}
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(comment.category)}`}>
+                      {comment.category}
+                    </span>
+                  )}
+                </div>
+              )}
             </>
           ) : (
+            // Other platforms last
             <>
               <div className="flex items-center gap-1">
                 <ThumbsUp className="h-3 w-3" />
@@ -153,13 +279,32 @@ export default function CommentCard({ comment, index = 0 }) {
                 <MessageCircle className="h-3 w-3" />
                 <span>{comment.replies || 0}</span>
               </div>
+              {comment.category && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {Array.isArray(comment.category) ? (
+                    comment.category.slice(0, 2).map((cat, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(cat)}`}
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(comment.category)}`}>
+                      {comment.category}
+                    </span>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
-        <div className="text-xs text-gray-400">
-          {comment.rating && comment.platform !== 'YouTube' && `⭐ ${comment.rating}/5`}
+        <div className="flex items-center gap-2">
+          {comment.rating && isReviewPlatform(comment.platform) && renderStars(comment.rating)}
+          {comment.rating && comment.platform === 'YouTube' && `⭐ ${comment.rating}/5`}
           {comment.platform === 'YouTube' && comment.subscriberCount && (
-            <span className="ml-2">👥 {comment.subscriberCount.toLocaleString()}</span>
+            <span className="text-xs text-gray-400">👥 {comment.subscriberCount.toLocaleString()}</span>
           )}
         </div>
       </div>

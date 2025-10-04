@@ -11,10 +11,10 @@ export default function Layout({ children }) {
   const [dataSources, setDataSources] = useState({
     playStore: true,
     appStore: true,
-    threads: false,
-    trustpilot: false
+    trustpilot: true
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [brandName, setBrandName] = useState('flo');
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -25,14 +25,31 @@ export default function Layout({ children }) {
   const dataSourceOptions = [
     { id: 'playStore', label: 'Play Store', icon: Smartphone },
     { id: 'appStore', label: 'App Store', icon: Apple },
-    { id: 'threads', label: 'Threads', icon: MessageSquare },
     { id: 'trustpilot', label: 'Trustpilot', icon: Star },
   ];
 
   const handleDataSourceChange = (sourceId) => {
-    setDataSources(prev => ({
-      ...prev,
-      [sourceId]: !prev[sourceId]
+    setDataSources(prev => {
+      const newDataSources = {
+        ...prev,
+        [sourceId]: !prev[sourceId]
+      };
+      
+      // Dispatch event to update dashboard
+      window.dispatchEvent(new CustomEvent('dataSourceUpdated', {
+        detail: { dataSources: newDataSources, brandName }
+      }));
+      
+      return newDataSources;
+    });
+  };
+
+  const handleBrandNameChange = (value) => {
+    setBrandName(value);
+    
+    // Dispatch event to update dashboard with new brand name
+    window.dispatchEvent(new CustomEvent('dataSourceUpdated', {
+      detail: { dataSources, brandName: value }
     }));
   };
 
@@ -60,8 +77,8 @@ export default function Layout({ children }) {
         },
         body: JSON.stringify({
           source: 'appstore',
-          app_identifier: "547951480",
-          brand: "zara",
+          app_identifier: "1215024722",
+          brand: "flo",
           limit: 20,
           date_period: {
             start_date: startDate,
@@ -156,6 +173,21 @@ export default function Layout({ children }) {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6">Data Sources</h2>
               
+              {/* Brand Name Input */}
+              <div className="mb-6">
+                <label htmlFor="brandName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand Name (Keyword)
+                </label>
+                <input
+                  id="brandName"
+                  type="text"
+                  value={brandName}
+                  onChange={(e) => handleBrandNameChange(e.target.value)}
+                  placeholder="Enter brand name to search..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              
               {/* Data Source Checkboxes */}
               <div className="space-y-4 mb-6">
                 {dataSourceOptions.map((option) => {
@@ -207,6 +239,11 @@ export default function Layout({ children }) {
                 <p className="text-xs text-blue-800">
                   <strong>Active Sources:</strong> {Object.values(dataSources).filter(Boolean).length} of {dataSourceOptions.length}
                 </p>
+                {brandName && (
+                  <p className="text-xs text-blue-800 mt-1">
+                    <strong>Brand Filter:</strong> "{brandName}"
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>

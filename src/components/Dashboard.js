@@ -6,26 +6,23 @@ import { RefreshCw, Calendar, AlertTriangle } from 'lucide-react';
 import CommentsFeed from './CommentsFeed';
 import StatsCards from './StatsCards';
 import LinearGraph from './LinearGraph';
-
-const DATE_FILTERS = [
-  { label: 'Last 24 Hours', value: '24h', days: 1 },
-  { label: '7 Days', value: '7d', days: 7 },
-  { label: '1 Month', value: '1m', days: 30 },
-  { label: '3 Months', value: '3m', days: 90 },
-  { label: '6 Months', value: '6m', days: 180 },
-  { label: '1 Year', value: '1y', days: 365 },
-  { label: 'All Time', value: 'all', days: null }
-];
+import { fetchStatistics, DATE_FILTERS } from '../lib/statistics';
 
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState('7d');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [dataSources, setDataSources] = useState({
+    playStore: true,
+    appStore: true,
+    trustpilot: true
+  });
+  const [brandName, setBrandName] = useState('');
 
   useEffect(() => {
     fetchAnalytics();
-  }, [dateFilter]);
+  }, [dateFilter, dataSources, brandName]);
 
   // Listen for data refresh events
   useEffect(() => {
@@ -33,34 +30,32 @@ export default function Dashboard() {
       fetchAnalytics();
     };
 
+    const handleDataSourceUpdate = (event) => {
+      if (event.detail.dataSources) {
+        setDataSources(event.detail.dataSources);
+      }
+      if (event.detail.brandName !== undefined) {
+        setBrandName(event.detail.brandName);
+      }
+    };
+
     window.addEventListener('dataRefreshed', handleDataRefresh);
-    return () => window.removeEventListener('dataRefreshed', handleDataRefresh);
+    window.addEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    
+    return () => {
+      window.removeEventListener('dataRefreshed', handleDataRefresh);
+      window.removeEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    };
   }, []);
 
   const fetchAnalytics = async () => {
     try {
-      const params = new URLSearchParams();
-      if (dateFilter !== 'all') {
-        const filter = DATE_FILTERS.find(f => f.value === dateFilter);
-        if (filter) {
-          params.append('days', filter.days.toString());
-        }
-      }
-      
-      const response = await fetch(`/api/analytics?${params.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Check if the response contains an error
-      if (data.error) {
-        throw new Error(data.message || 'Failed to fetch analytics data');
-      }
-      
-      setAnalytics(data);
+      const analytics = await fetchStatistics({
+        platforms: dataSources,
+        dateFilter: dateFilter,
+        brandName: brandName
+      });
+      setAnalytics(analytics);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
       // Set analytics to null to show error state
@@ -69,6 +64,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
 
   const normalizeDate = (dateString) => {
     if (!dateString) return null;
@@ -144,7 +140,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <CommentsFeed title="Recent Comments" limit={6} />
+            <CommentsFeed title="Recent Comments" limit={50} />
           </motion.div>
         </motion.div>
       </div>
@@ -212,7 +208,7 @@ export default function Dashboard() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-8"
         >
-          <CommentsFeed title="Recent Comments" limit={6} />
+          <CommentsFeed title="Recent Comments" limit={50} />
         </motion.div>
       </motion.div>
     </div>

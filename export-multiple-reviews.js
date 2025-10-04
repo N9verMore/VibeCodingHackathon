@@ -122,7 +122,7 @@ function parseReviewsFromRSS(rssData) {
       if (index === 0) return null;
       
       return {
-        author: entry.author?.name?.label || entry.author?.label || 'Anonymous',
+        author: entry.author?.name?.label || entry.author?.label || '',
         rating: entry['im:rating']?.label || entry.rating?.label || 'N/A',
         title: entry.title?.label || 'No title',
         content: entry.content?.label || 'No content',

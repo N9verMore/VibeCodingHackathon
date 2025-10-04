@@ -5,20 +5,86 @@ import { motion } from 'framer-motion';
 import { RefreshCw, Filter, MessageSquare } from 'lucide-react';
 import CommentCard from './CommentCard';
 
-export default function CommentsFeed({ title = "Recent Comments", filterBy = null, limit = 5 }) {
+export default function CommentsFeed({ title = "Recent Comments", filterBy = null, limit = 50 }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [dataSources, setDataSources] = useState({
+    playStore: true,
+    appStore: true,
+    trustpilot: true
+  });
+  const [brandName, setBrandName] = useState('');
 
   useEffect(() => {
     fetchComments();
-  }, [filterBy, filter]);
+  }, [filterBy, filter, dataSources, brandName]);
+
+  // Listen for data source updates from Layout
+  useEffect(() => {
+    const handleDataSourceUpdate = (event) => {
+      if (event.detail.dataSources) {
+        setDataSources(event.detail.dataSources);
+      }
+      if (event.detail.brandName !== undefined) {
+        setBrandName(event.detail.brandName);
+      }
+    };
+
+    window.addEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    
+    return () => {
+      window.removeEventListener('dataSourceUpdated', handleDataSourceUpdate);
+    };
+  }, []);
 
   const fetchComments = async () => {
     try {
-      // Use YouTube comments data as temporary mock
-      const response = await fetch('/youtube_comments.json');
+      // Check if any data sources are selected
+      const selectedSources = Object.entries(dataSources)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([source, _]) => {
+          // Map frontend source names to API platform names
+          const sourceMap = {
+            playStore: 'google_play',
+            appStore: 'app_store',
+            trustpilot: 'trustpilot'
+          };
+          return sourceMap[source] || source;
+        });
+      
+      // If no sources are selected, show empty state
+      if (selectedSources.length === 0) {
+        setComments([]);
+        return;
+      }
+      
+      const params = new URLSearchParams();
+      params.append('limit', limit.toString());
+      params.append('platforms', JSON.stringify(selectedSources));
+      
+      // Add brand name if provided
+      if (brandName && brandName.trim()) {
+        params.append('brandName', brandName.trim());
+      }
+      
+      if (filter !== 'all') {
+        params.append('sentiment', filter);
+      }
+      
+      // Use the new comments API endpoint
+      const response = await fetch(`/api/comments?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const apiData = await response.json();
+      
+      // Check if the response contains an error
+      if (apiData.error) {
+        throw new Error(apiData.message || 'Failed to fetch comments data');
+      }
       
       // Transform API data and categorize posts by highest sentiment score
       const transformedComments = apiData.map(comment => {
@@ -38,6 +104,7 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
           id: comment.id,
           title: comment.title || comment.content?.substring(0, 50) + '...',
           content: comment.content,
+          description: comment.description, // Extracted "Опис:" field
           author: comment.author || 'Anonymous',
           platform: mapPlatformName(comment.platform),
           sentiment: dominantSentiment,
@@ -47,7 +114,9 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
           rating: comment.rating || null,
           sentimentScores: sentimentScores,
           thumbnail: comment.thumbnail || null,
-          url: comment.url || null
+          url: comment.url || null,
+          category: comment.category, // Pass through category information
+          severity: comment.severity // Pass through severity information
         };
       });
 
@@ -92,7 +161,6 @@ export default function CommentsFeed({ title = "Recent Comments", filterBy = nul
       'twitter': 'Twitter',
       'facebook': 'Facebook',
       'instagram': 'Instagram',
-      'threads': 'Threads',
       'youtube': 'YouTube'
     };
     return platformMap[platform] || platform;

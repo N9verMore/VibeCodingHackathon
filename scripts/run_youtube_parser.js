@@ -9,7 +9,6 @@ async function runCompleteYouTubeParsing() {
   
   try {
     // Step 1: Parse YouTube videos
-    console.log('📹 Step 1: Parsing YouTube videos by #zara hashtag...');
     const videos = await parseYouTubeVideos();
     console.log(`✅ Found ${videos.length} unique videos\n`);
     
