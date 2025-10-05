@@ -1,5 +1,5 @@
 # ============================================
-# FILE: app/models/__init__.py
+# FILE: pdmodule/models/__init__.py
 # ============================================
 from .review import ReviewFromDB, LLMAnalysis, ProcessedReview
 from .enums import ReviewSource, Sentiment

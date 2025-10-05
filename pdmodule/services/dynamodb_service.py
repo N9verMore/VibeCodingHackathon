@@ -1,5 +1,5 @@
 # ============================================
-# FILE: app/services/dynamodb_service.py
+# FILE: pdmodule/services/dynamodb_service.py
 # ============================================
 from typing import List, Optional
 import logging
@@ -7,7 +7,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from datetime import datetime
-from app.models import ReviewFromDB, ReviewSource, ProcessedReview
+from pdmodule.models import ReviewFromDB, ReviewSource, ProcessedReview
 
 logger = logging.getLogger(__name__)
 

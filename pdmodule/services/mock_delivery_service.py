@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from datetime import datetime
-from app.models import ProcessedReview
+from pdmodule.models import ProcessedReview
 
 logger = logging.getLogger(__name__)
 

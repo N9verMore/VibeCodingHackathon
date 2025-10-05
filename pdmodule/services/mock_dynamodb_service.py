@@ -1,7 +1,7 @@
 from typing import List, Optional
 import logging
 from datetime import datetime, timedelta
-from app.models import ReviewFromDB, ReviewSource
+from pdmodule.models import ReviewFromDB, ReviewSource
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class MockDynamoDBService:
                 backlink="https://apps.apple.com/review/001",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Чудовий додаток!",
                 text="Користуюся вже місяць, все працює відмінно. Інтерфейс зручний, швидко завантажується. Особливо подобається функція автоматичного збереження.",
                 rating=5,
@@ -56,7 +56,7 @@ class MockDynamoDBService:
                 backlink="https://play.google.com/review/002",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Не можу оплатити підписку",
                 text="Намагаюся оплатити преміум підписку, але постійно вилітає помилка. Підтримка не відповідає вже 3 дні. Дуже розчарований.",
                 rating=1,
@@ -94,7 +94,7 @@ class MockDynamoDBService:
                 backlink="https://apps.apple.com/review/004",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Незрозумілий інтерфейс",
                 text="Після останнього оновлення все переплуталось. Не можу знайти де налаштування. Кнопки маленькі, важко натискати на телефоні. Верніть стару версію!",
                 rating=2,
@@ -113,7 +113,7 @@ class MockDynamoDBService:
                 backlink="https://play.google.com/review/005",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Швидко і стабільно",
                 text="Оновлення дійсно покращило швидкість роботи. Тепер все летить! Навіть на старому телефоні працює без лагів. Молодці розробники!",
                 rating=5,
@@ -151,7 +151,7 @@ class MockDynamoDBService:
                 backlink="https://apps.apple.com/review/007",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Всі функції що потрібно",
                 text="Нарешті додаток, в якому є все необхідне. Особливо круто що додали експорт в PDF та інтеграцію з Google Calendar. Рекомендую всім!",
                 rating=5,
@@ -170,7 +170,7 @@ class MockDynamoDBService:
                 backlink="https://play.google.com/review/008",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Є плюси і мінуси",
                 text="Функціонал хороший, але ціна підписки завищена. За такі гроші можна було б додати більше можливостей. Ще іноді реклама показується навіть в преміум версії.",
                 rating=3,
@@ -189,8 +189,8 @@ class MockDynamoDBService:
                 backlink="https://apps.apple.com/review/009",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
-                title="Great app!",
+                app_identifier="com.testbrand.pdmodule",
+                title="Great pdmodule!",
                 text="Love the new design and features. Very intuitive and user-friendly. Customer support is also very responsive and helpful. Keep up the good work!",
                 rating=5,
                 language="en",
@@ -208,7 +208,7 @@ class MockDynamoDBService:
                 backlink="https://play.google.com/review/010",
                 brand="TestBrand",
                 is_processed=False,
-                app_identifier="com.testbrand.app",
+                app_identifier="com.testbrand.pdmodule",
                 title="Crashes all the time",
                 text="App keeps crashing every time I try to save my work. Lost important data twice already. This is unacceptable. Please fix these bugs ASAP!",
                 rating=1,

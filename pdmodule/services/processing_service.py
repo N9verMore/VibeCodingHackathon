@@ -1,13 +1,13 @@
 # ============================================
-# FILE: app/services/processing_service.py
+# FILE: pdmodule/services/processing_service.py
 # ============================================
 import logging
 import asyncio
 from typing import Dict, List, Tuple, Optional
-from app.models import ProcessedReview, ReviewFromDB
-from app.services.dynamodb_service import DynamoDBService
-from app.services.openai_service import OpenAIService
-from app.services.delivery_service import DeliveryService
+from pdmodule.models import ProcessedReview, ReviewFromDB
+from pdmodule.services.dynamodb_service import DynamoDBService
+from pdmodule.services.openai_service import OpenAIService
+from pdmodule.services.delivery_service import DeliveryService
 
 logger = logging.getLogger(__name__)
 

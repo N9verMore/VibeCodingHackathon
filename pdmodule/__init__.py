@@ -1,5 +1,5 @@
 # ============================================
-# FILE: app/__init__.py
+# FILE: pdmodule/__init__.py
 # ============================================
 """
 Brand Reputation Defender - Review Processor

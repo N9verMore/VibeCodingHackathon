@@ -3,8 +3,8 @@
 # ============================================
 from fastapi import FastAPI
 import logging
-from app.api import router
-from app.config import get_settings
+from pdmodule.api import router
+from pdmodule.config import get_settings
 
 # Налаштування логування
 logging.basicConfig(
@@ -12,7 +12,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-# Створення FastAPI app
+# Створення FastAPI pdmodule
 app = FastAPI(
     title="Brand Reputation Defender - Review Processor",
     description="Сервіс обробки відгуків через OpenAI API",

@@ -1,5 +1,5 @@
 # ============================================
-# FILE: app/api/__init__.py
+# FILE: pdmodule/api/__init__.py
 # ============================================
 from .routes import router
 

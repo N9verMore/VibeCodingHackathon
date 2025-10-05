@@ -1,11 +1,11 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 from typing import Optional
 from datetime import datetime
-from app.services import ReviewProcessingService
-from app.dependencies import get_processing_service, get_dynamodb_service, get_delivery_service
-from app.services.mock_dynamodb_service import MockDynamoDBService
-from app.services.mock_delivery_service import MockDeliveryService
-from app.models import ProcessReviewsRequest
+from pdmodule.services import ReviewProcessingService
+from pdmodule.dependencies import get_processing_service, get_dynamodb_service, get_delivery_service
+from pdmodule.services.mock_dynamodb_service import MockDynamoDBService
+from pdmodule.services.mock_delivery_service import MockDeliveryService
+from pdmodule.models import ProcessReviewsRequest
 
 router = APIRouter()
 

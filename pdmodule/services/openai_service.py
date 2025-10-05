@@ -1,12 +1,12 @@
 # ============================================
-# FILE: app/services/openai_service.py
+# FILE: pdmodule/services/openai_service.py
 # ============================================
 import openai
 import json
 import logging
 from typing import List
 from fastapi import HTTPException
-from app.models import ReviewFromDB, LLMAnalysis
+from pdmodule.models import ReviewFromDB, LLMAnalysis
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,12 @@
 # ============================================
-# FILE: app/services/delivery_service.py
+# FILE: pdmodule/services/delivery_service.py
 # ============================================
 import httpx
 import logging
 from typing import List
 from datetime import datetime
 from fastapi import HTTPException
-from app.models import ProcessedReview
+from pdmodule.models import ProcessedReview
 
 logger = logging.getLogger(__name__)
 

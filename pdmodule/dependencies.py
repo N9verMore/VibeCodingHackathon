@@ -1,13 +1,13 @@
 from functools import lru_cache
-from app.config import get_settings
-from app.services import (
+from pdmodule.config import get_settings
+from pdmodule.services import (
     DynamoDBService,
     OpenAIService,
     DeliveryService,
     ReviewProcessingService
 )
-from app.services.mock_dynamodb_service import MockDynamoDBService
-from app.services.mock_delivery_service import MockDeliveryService
+from pdmodule.services.mock_dynamodb_service import MockDynamoDBService
+from pdmodule.services.mock_delivery_service import MockDeliveryService
 
 
 @lru_cache()
