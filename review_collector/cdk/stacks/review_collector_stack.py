@@ -460,9 +460,10 @@ class ReviewCollectorStack(Stack):
             lambda_function=serpapi_lambda,
             payload=sfn.TaskInput.from_object({
                 "source": "appstore",
-                "app_identifier": sfn.JsonPath.string_at("$.sources.appstore"),
+                "app_identifier": sfn.JsonPath.string_at("$.appstore.id"),
                 "brand": sfn.JsonPath.string_at("$.brand"),
                 "limit": sfn.JsonPath.number_at("$.limit"),
+                "country": sfn.JsonPath.string_at("$.appstore.country"),
                 "job_id": sfn.JsonPath.string_at("$.job_id")
             }),
             result_selector={
@@ -489,9 +490,10 @@ class ReviewCollectorStack(Stack):
             lambda_function=serpapi_lambda,
             payload=sfn.TaskInput.from_object({
                 "source": "googleplay",
-                "app_identifier": sfn.JsonPath.string_at("$.sources.googleplay"),
+                "app_identifier": sfn.JsonPath.string_at("$.googleplay.package_name"),
                 "brand": sfn.JsonPath.string_at("$.brand"),
                 "limit": sfn.JsonPath.number_at("$.limit"),
+                "country": sfn.JsonPath.string_at("$.googleplay.country"),
                 "job_id": sfn.JsonPath.string_at("$.job_id")
             }),
             result_selector={
@@ -518,7 +520,7 @@ class ReviewCollectorStack(Stack):
             lambda_function=serpapi_lambda,
             payload=sfn.TaskInput.from_object({
                 "source": "trustpilot",
-                "app_identifier": sfn.JsonPath.string_at("$.sources.trustpilot"),
+                "app_identifier": sfn.JsonPath.string_at("$.trustpilot.domain"),
                 "brand": sfn.JsonPath.string_at("$.brand"),
                 "limit": sfn.JsonPath.number_at("$.limit"),
                 "job_id": sfn.JsonPath.string_at("$.job_id")
@@ -542,14 +544,11 @@ class ReviewCollectorStack(Stack):
         )
         
         # Task 5: Collect News (with error handling)
+        # Pass entire news config object + brand and job_id
         news_task = tasks.LambdaInvoke(
             self, "CollectNews",
             lambda_function=news_lambda,
-            payload=sfn.TaskInput.from_object({
-                "brand": sfn.JsonPath.string_at("$.brand"),
-                "limit": sfn.JsonPath.number_at("$.limit"),
-                "job_id": sfn.JsonPath.string_at("$.job_id")
-            }),
+            payload=sfn.TaskInput.from_json_path_at("$"),
             result_selector={
                 "source": "news",
                 "success": True,
@@ -574,9 +573,10 @@ class ReviewCollectorStack(Stack):
             lambda_function=reddit_lambda,
             payload=sfn.TaskInput.from_object({
                 "brand": sfn.JsonPath.string_at("$.brand"),
-                "keywords": sfn.JsonPath.string_at("$.reddit_keywords"),
+                "keywords": sfn.JsonPath.string_at("$.reddit.keywords"),
                 "limit": sfn.JsonPath.number_at("$.limit"),
-                "days_back": 30,
+                "days_back": sfn.JsonPath.number_at("$.reddit.days_back"),
+                "sort": sfn.JsonPath.string_at("$.reddit.sort"),
                 "job_id": sfn.JsonPath.string_at("$.job_id")
             }),
             result_selector={
@@ -609,12 +609,12 @@ class ReviewCollectorStack(Stack):
         parallel_collection.branch(news_task)
         parallel_collection.branch(reddit_task)
         
-        # Task 6: Call external processing endpoint
+        # Task 7: Call external processing endpoint
         call_processing_endpoint = tasks.LambdaInvoke(
             self, "CallProcessingEndpoint",
             lambda_function=http_caller_lambda,
             payload=sfn.TaskInput.from_object({
-                "endpoint_url": "https://webhook.site/test-endpoint",  # Hardcoded stub
+                "endpoint_url": sfn.JsonPath.string_at("$.endpoint_url"),
                 "job_id": sfn.JsonPath.string_at("$.job_id"),
                 "brand": sfn.JsonPath.string_at("$.brand"),
                 "collection_results": sfn.JsonPath.string_at("$.collection_results")

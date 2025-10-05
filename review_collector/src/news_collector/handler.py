@@ -142,11 +142,17 @@ def _collect_news(request: CollectNewsRequest, job_id: str = None) -> Dict[str, 
         Statistics dictionary
     """
     # Normalize brand names
-    brand_for_storage = normalize_brand_for_storage(request.brand)
+    # If brand_for_storage provided, use it; otherwise use brand
+    if request.brand_for_storage:
+        brand_for_storage = normalize_brand_for_storage(request.brand_for_storage)
+    else:
+        brand_for_storage = normalize_brand_for_storage(request.brand)
+    
     brand_for_search = normalize_brand_for_search(request.brand)
     
-    logger.info(f"🎯 Collecting news for brand: {request.brand}")
-    logger.info(f"   Brand for search: {brand_for_search}")
+    logger.info(f"🎯 Collecting news")
+    logger.info(f"   Keywords for search: {request.brand}")
+    logger.info(f"   Brand for search (normalized): {brand_for_search}")
     logger.info(f"   Brand for storage: {brand_for_storage}")
     logger.info(f"   Search type: {request.search_type}")
     logger.info(f"   Limit: {request.limit}")

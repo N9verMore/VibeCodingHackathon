@@ -72,11 +72,11 @@ class CollectRedditRequest:
         job_id = data.get('job_id')
         
         return cls(
-            brand=brand,
-            keywords=keywords,
-            limit=limit,
-            days_back=days_back,
-            sort=sort,
+            brand=brand or '',
+            keywords=keywords or '',
+            limit=limit if limit else 100,
+            days_back=days_back if days_back else 30,
+            sort=sort or 'new',
             job_id=job_id
         )
 

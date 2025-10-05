@@ -126,13 +126,14 @@ class CollectReviewsRequest:
         Returns:
             CollectReviewsRequest instance
         """
+        # Handle None values from Step Functions JsonPath
         return cls(
-            source=data.get('source', ''),
-            app_identifier=data.get('app_identifier', ''),
-            brand=data.get('brand', ''),
-            limit=data.get('limit'),
-            country=data.get('country', 'us'),
-            metadata=data.get('metadata', {})
+            source=data.get('source') or '',
+            app_identifier=data.get('app_identifier') or '',
+            brand=data.get('brand') or '',
+            limit=data.get('limit') if data.get('limit') else 100,
+            country=data.get('country') or 'us',
+            metadata=data.get('metadata') or {}
         )
     
     def to_dict(self) -> Dict[str, Any]:
