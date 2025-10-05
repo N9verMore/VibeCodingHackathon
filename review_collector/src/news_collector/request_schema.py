@@ -16,7 +16,8 @@ class CollectNewsRequest:
     Request schema for news collection.
     
     Attributes:
-        brand: Search term/keyword (e.g., 'Tesla', 'Apple')
+        brand: Search term/keyword for API search (e.g., 'Tesla', 'Apple')
+        brand_for_storage: Brand name for database storage (optional, defaults to brand)
         limit: Max number of articles to collect (1-500)
         search_type: 'everything' or 'top-headlines'
         from_date: Start date (everything only)
@@ -30,6 +31,7 @@ class CollectNewsRequest:
     brand: str
     limit: int = 100
     search_type: str = "everything"
+    brand_for_storage: Optional[str] = None
     from_date: Optional[date] = None
     to_date: Optional[date] = None
     language: Optional[str] = None
@@ -80,6 +82,8 @@ class CollectNewsRequest:
             'search_type': self.search_type,
         }
         
+        if self.brand_for_storage:
+            result['brand_for_storage'] = self.brand_for_storage
         if self.from_date:
             result['from_date'] = self.from_date.isoformat()
         if self.to_date:
@@ -176,30 +180,55 @@ def parse_lambda_event(event: Dict[str, Any]) -> CollectNewsRequest:
         body = event['body']
         if isinstance(body, str):
             body = json.loads(body)
+    elif 'news' in event:
+        # Step Functions invocation - extract news config
+        news_config = event.get('news', {})
+        body = {
+            'brand': news_config.get('keywords', ''),
+            'brand_for_storage': event.get('brand'),
+            'limit': event.get('limit', 100),
+            'search_type': news_config.get('search_type', 'everything'),
+            'from_date': news_config.get('from_date'),
+            'to_date': news_config.get('to_date'),
+            'language': news_config.get('language'),
+            'country': news_config.get('country'),
+            'category': news_config.get('category'),
+            'sources': news_config.get('sources'),
+            'search_in': news_config.get('search_in')
+        }
     else:
         # Direct Lambda invocation
         body = event
     
-    # Parse dates
+    # Parse dates (handle None from Step Functions JsonPath)
     from_date = None
     to_date = None
     
-    if 'from_date' in body:
-        from_date = date.fromisoformat(body['from_date'])
-    if 'to_date' in body:
-        to_date = date.fromisoformat(body['to_date'])
+    if body.get('from_date') and body.get('from_date') != 'null':
+        try:
+            from_date = date.fromisoformat(body['from_date'])
+        except (ValueError, TypeError):
+            from_date = None
     
+    if body.get('to_date') and body.get('to_date') != 'null':
+        try:
+            to_date = date.fromisoformat(body['to_date'])
+        except (ValueError, TypeError):
+            to_date = None
+    
+    # Handle None values from Step Functions JsonPath
     return CollectNewsRequest(
-        brand=body.get('brand', ''),
-        limit=body.get('limit', 100),
-        search_type=body.get('search_type', 'everything'),
+        brand=body.get('brand') or '',
+        limit=body.get('limit') or 100,
+        search_type=body.get('search_type') or 'everything',
+        brand_for_storage=body.get('brand_for_storage'),
         from_date=from_date,
         to_date=to_date,
-        language=body.get('language'),
-        country=body.get('country'),
-        category=body.get('category'),
-        sources=body.get('sources'),
-        search_in=body.get('search_in')
+        language=body.get('language') if body.get('language') else None,
+        country=body.get('country') if body.get('country') else None,
+        category=body.get('category') if body.get('category') else None,
+        sources=body.get('sources') if body.get('sources') else None,
+        search_in=body.get('search_in') if body.get('search_in') else None
     )
 
 
