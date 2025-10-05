@@ -1,0 +1,8 @@
+{
+  "ReviewCollectorStack": {
+    "ApiUrl": "https://xp9v1vxlih.execute-api.us-east-1.amazonaws.com/prod/",
+    "ApiEndpoint": "https://xp9v1vxlih.execute-api.us-east-1.amazonaws.com/prod/collect-reviews",
+    "LambdaFunctionName": "serpapi-collector-lambda",
+    "DynamoDBTableName": "ReviewsTableV2"
+  }
+}
