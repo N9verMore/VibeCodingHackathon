@@ -1,0 +1,352 @@
+{
+    "kind": "youtube#searchListResponse",
+    "etag": "5_tiYGs3ym41FmCMZx0n8or0AJw",
+    "nextPageToken": "CAoQAA",
+    "regionCode": "UA",
+    "pageInfo": {
+        "totalResults": 1000000,
+        "resultsPerPage": 10
+    },
+    "items": [
+        {
+            "kind": "youtube#searchResult",
+            "etag": "zNwwiFPPYL24ze4nkInUcInFQhM",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "Oi7aANyP7b4"
+            },
+            "snippet": {
+                "publishedAt": "2023-05-12T13:52:33Z",
+                "channelId": "UCl2C9AyRxxSk8C3yV7LwVcA",
+                "title": "Zara cotton dress review - not as good as you think!",
+                "description": "",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/Oi7aANyP7b4/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/Oi7aANyP7b4/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/Oi7aANyP7b4/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Jennifer Wang",
+                "liveBroadcastContent": "none",
+                "publishTime": "2023-05-12T13:52:33Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "h2eiRkRDRK56SdONXa3MI-Z6OrE",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "lvRH5E2QHwU"
+            },
+            "snippet": {
+                "publishedAt": "2025-01-02T18:00:35Z",
+                "channelId": "UCim7NtqjYdkLrtQ1VDtQ_2Q",
+                "title": "Zara mens fragrances, SPEND or SAVE 🍿 👀 #fragrance #zara #fyp",
+                "description": "",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/lvRH5E2QHwU/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/lvRH5E2QHwU/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/lvRH5E2QHwU/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "SCENTALITY",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-01-02T18:00:35Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "Q2Hy8xX57ousK5RyZj9mkqkHVEk",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "RYZYn4Mt7rg"
+            },
+            "snippet": {
+                "publishedAt": "2025-08-25T15:31:52Z",
+                "channelId": "UCFarEEFsV90-pvUU0XdUdgQ",
+                "title": "Are ZARA&#39;S New COFFEE PERFUMES Any Good? Full Review + Ranking",
+                "description": "Are ZARA'S New COFFEE PERFUMES Any Good? Full Review + Ranking ➡️ Buy NEW ScentClub Kit #16: ...",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/RYZYn4Mt7rg/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/RYZYn4Mt7rg/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/RYZYn4Mt7rg/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "The Perfume Guy",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-08-25T15:31:52Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "66NcE09Ir5TualRAyMZ2PftQVm0",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "MeaAJ9KXD9A"
+            },
+            "snippet": {
+                "publishedAt": "2022-09-19T14:51:16Z",
+                "channelId": "UCzhBUw8MLmUl8cPMx63sFuw",
+                "title": "The only colognes you should buy from Zara￼",
+                "description": "The only colognes you should buy from Zara #shorts.",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/MeaAJ9KXD9A/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/MeaAJ9KXD9A/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/MeaAJ9KXD9A/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Cubaknow",
+                "liveBroadcastContent": "none",
+                "publishTime": "2022-09-19T14:51:16Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "FNq0Xfol9REd0EcCNFWHKxK2nIM",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "dS7Z7WZF0M8"
+            },
+            "snippet": {
+                "publishedAt": "2025-10-04T08:39:00Z",
+                "channelId": "UCviIuGNW0io8itnnk96k6WA",
+                "title": "Римский Вайб ✨✨✨ Обзор ZARA 💃 Мои Покупки на Осень 🛍️",
+                "description": "italia #roma #zara #cos #примерки #покупки#октябрь2025#римскийвайб.",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/dS7Z7WZF0M8/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/dS7Z7WZF0M8/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/dS7Z7WZF0M8/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Iri Roma 💙💛",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-10-04T08:39:00Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "lvIIiEZWTRVTC2SYwvu6_az1KTQ",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "DemtGpU4ahQ"
+            },
+            "snippet": {
+                "publishedAt": "2025-07-24T22:04:21Z",
+                "channelId": "UCbDDxqj7FyNNdTtQO3_caUw",
+                "title": "Secret Zara shopping tip 🛍️ #savemoney #lifehacks #zara #shopping #tipsandtricks #zarahaul",
+                "description": "",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/DemtGpU4ahQ/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/DemtGpU4ahQ/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/DemtGpU4ahQ/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Amin Tips",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-07-24T22:04:21Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "UxF4wAhviLZT0k0coCYuV9pPgv4",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "832HNuR-E0g"
+            },
+            "snippet": {
+                "publishedAt": "2025-02-09T10:00:07Z",
+                "channelId": "UCim7NtqjYdkLrtQ1VDtQ_2Q",
+                "title": "My Top 3 Zara Fragrances #zara #fragrance #fyp",
+                "description": "",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/832HNuR-E0g/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/832HNuR-E0g/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/832HNuR-E0g/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "SCENTALITY",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-02-09T10:00:07Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "4yaoJBsmkja23vks_muFzfjbiKI",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "HtWQsHGiYq8"
+            },
+            "snippet": {
+                "publishedAt": "2024-05-19T09:32:34Z",
+                "channelId": "UC0gpjibEQL_CUZA1YyoO0ug",
+                "title": "Affordable Alternatives Zara dupes 🤑 #shorts #Zara #perfumes",
+                "description": "",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/HtWQsHGiYq8/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/HtWQsHGiYq8/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/HtWQsHGiYq8/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "vania perfumes",
+                "liveBroadcastContent": "none",
+                "publishTime": "2024-05-19T09:32:34Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "si6eb7ff4IneoOYqTM9yyeuJIIo",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "VJzjZ14YQts"
+            },
+            "snippet": {
+                "publishedAt": "2025-10-02T15:22:14Z",
+                "channelId": "UC8_s9iILaMUllbezmkvK8Nw",
+                "title": "ZARA HOME Best Furniture Finds 2025 | Full Collection Review",
+                "description": "Discover the new Zara Home Furniture Collection 2025 with me in this full video tour! From accent chairs and bar stools to side ...",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/VJzjZ14YQts/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/VJzjZ14YQts/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/VJzjZ14YQts/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Ivy River ",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-10-02T15:22:14Z"
+            }
+        },
+        {
+            "kind": "youtube#searchResult",
+            "etag": "He9cVirES5UoMvUOiL-vUiPcPaE",
+            "id": {
+                "kind": "youtube#video",
+                "videoId": "PM_SPs0SCnI"
+            },
+            "snippet": {
+                "publishedAt": "2025-01-14T05:51:48Z",
+                "channelId": "UClR1aOtnBseG7O0smsCUf0A",
+                "title": "Best Zara dupes of niche perfumes | Best Zara dupes",
+                "description": "Best Zara dupes of niche perfumes | Best Zara dupes Which one is your favourite? #mostcomplimentedfragrances ...",
+                "thumbnails": {
+                    "default": {
+                        "url": "https://i.ytimg.com/vi/PM_SPs0SCnI/default.jpg",
+                        "width": 120,
+                        "height": 90
+                    },
+                    "medium": {
+                        "url": "https://i.ytimg.com/vi/PM_SPs0SCnI/mqdefault.jpg",
+                        "width": 320,
+                        "height": 180
+                    },
+                    "high": {
+                        "url": "https://i.ytimg.com/vi/PM_SPs0SCnI/hqdefault.jpg",
+                        "width": 480,
+                        "height": 360
+                    }
+                },
+                "channelTitle": "Perfumeofmax",
+                "liveBroadcastContent": "none",
+                "publishTime": "2025-01-14T05:51:48Z"
+            }
+        }
+    ]
+}

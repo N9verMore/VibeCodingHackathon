@@ -1,0 +1,40 @@
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "youtube:parse": "node scripts/parse_youtube_videos.js",
+    "youtube:subscribers": "node scripts/fetch_subscriber_counts.js",
+    "youtube:enhance": "node scripts/enhance_video_data.js",
+    "youtube:all": "node scripts/run_youtube_parser.js",
+    "youtube:clean": "rm -f youtube_enhance_progress.json && echo 'Progress files cleaned up'",
+    "youtube:help": "echo 'YouTube Parser Commands:' && echo '  pnpm youtube:parse     - Parse YouTube videos by #zara hashtag' && echo '  pnpm youtube:subscribers - Fetch subscriber counts for authors' && echo '  pnpm youtube:enhance    - Enhance videos with views, likes, comments' && echo '  pnpm youtube:all        - Run complete pipeline (recommended)' && echo '  pnpm youtube:clean      - Clean up progress files' && echo '  pnpm youtube:help       - Show this help message'"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.400.0",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "^3.2.1",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8.0.0",
+    "tailwindcss": "^4",
+    "typescript": "^5.0.0"
+  }
+}
