@@ -1,9 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ThumbsUp, ThumbsDown, MessageCircle, Calendar, User } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageCircle, Calendar, User, FileText, Loader2, Bot, Copy, Check, ChevronDown, ChevronUp, CheckCircle, XCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function CommentCard({ comment, index = 0 }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedDraft, setGeneratedDraft] = useState(null);
+  const [actionItems, setActionItems] = useState([]);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isResponseCollapsed, setIsResponseCollapsed] = useState(false);
+  const [isActionItemsCollapsed, setIsActionItemsCollapsed] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const getSentimentColor = (sentiment) => {
     if (sentiment === 'positive') {
       return 'bg-green-100 text-green-800 border-green-200';
@@ -115,6 +123,271 @@ export default function CommentCard({ comment, index = 0 }) {
     return comment.url;
   };
 
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  // Local storage functions
+  const getStorageKey = (commentId) => `comment_${commentId}`;
+
+  const loadFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(getStorageKey(comment.id));
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.generatedDraft) setGeneratedDraft(data.generatedDraft);
+        if (data.actionItems) setActionItems(data.actionItems);
+        if (data.isCompleted !== undefined) setIsCompleted(data.isCompleted);
+      }
+    } catch (error) {
+      console.error('Failed to load from localStorage:', error);
+    }
+  };
+
+  const saveToStorage = (draft, items, completed) => {
+    try {
+      const data = {
+        generatedDraft: draft,
+        actionItems: items,
+        isCompleted: completed
+      };
+      localStorage.setItem(getStorageKey(comment.id), JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
+  };
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    loadFromStorage();
+  }, [comment.id]);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    if (generatedDraft || actionItems.length > 0) {
+      saveToStorage(generatedDraft, actionItems, isCompleted);
+    }
+  }, [generatedDraft, actionItems, isCompleted, comment.id]);
+
+  const handleCompletedToggle = () => {
+    const newCompleted = !isCompleted;
+    setIsCompleted(newCompleted);
+    saveToStorage(generatedDraft, actionItems, newCompleted);
+  };
+
+  const handleGenerateDraft = async () => {
+    setIsGenerating(true);
+    try {
+      const getPlatformStyle = (platform) => {
+        const styles = {
+          'Instagram': 'casual, trendy, with emojis, friendly yet professional',
+          'App Store': 'official, polite, professional, formal tone',
+          'Play Store': 'official, polite, professional, formal tone',
+          'Reddit': 'casual, friendly, smart, conversational',
+          'Trustpilot': 'professional, polite, customer-focused',
+          'YouTube': 'engaging, friendly, professional',
+          'Facebook': 'warm, friendly, community-focused',
+          'Twitter': 'concise, professional, engaging'
+        };
+        return styles[platform] || 'professional, polite, helpful';
+      };
+
+      const platformStyle = getPlatformStyle(comment.platform);
+      const sentimentContext = comment.sentiment === 'negative' ? 'This is a negative comment that needs careful, empathetic handling.' : 
+                              comment.sentiment === 'positive' ? 'This is a positive comment that should be acknowledged warmly.' : 
+                              'This is a neutral comment that needs helpful response.';
+
+      const payload = {
+        message: `Напиши природну, людяну відповідь від служби підтримки на цей ${comment.sentiment} коментар з ${comment.platform}.
+
+Стиль платформи: ${platformStyle}
+Контекст: ${sentimentContext}
+
+Коментар: "${comment.content}"
+${comment.category ? `Категорія: ${comment.category}` : ''}
+${comment.rating ? `Рейтинг: ${comment.rating}/5` : ''}
+
+ВАЖЛИВО - відповідь має бути:
+- Написана українською мовою
+- Природною та живою, як справжня людина
+- Без шаблонних фраз та корпоративного жаргону
+- З конкретними деталями та особистим підходом
+- Відповідно до стилю платформи
+- Щирою та емпатичною
+- З практичними порадами або рішеннями
+- Без зайвих формальностей
+
+Приклади природних фраз:
+- "Розумію вашу фрустрацію..."
+- "Дякую, що поділилися досвідом!"
+- "Це дійсно важлива інформація для нас"
+- "Давайте разом це вирішимо"
+- "Ваш відгук допоможе нам стати кращими"
+
+Уникай: "Дякуємо за звернення", "Ми цінуємо ваш відгук", "Наша команда працює над цим" - це звучить як бот.
+
+ДОДАТКОВО - створи список дій для команди підтримки у форматі JSON:
+{
+  "response": "твоя відповідь клієнту",
+  "action_items": [
+    "конкретна дія 1",
+    "конкретна дія 2",
+    "конкретна дія 3"
+  ]
+}
+
+Приклади дій:
+- "перевірити обліковий запис користувача"
+- "зв'язатися зі службою підтримки"
+- "перевірити статус замовлення"
+- "оновити інформацію в системі"
+- "направити до відповідного відділу"
+- "зафіксувати проблему в базі даних"`
+
+      };
+
+      const response = await fetch('http://10.8.0.5:8000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle different response structures from the chat API
+      let draftText = '';
+      let extractedActionItems = [];
+      
+      const extractJsonFromText = (text) => {
+        // Look for JSON object in the text
+        const jsonMatch = text.match(/\{[\s\S]*"response"[\s\S]*"action_items"[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            const parsedJson = JSON.parse(jsonMatch[0]);
+            if (parsedJson.response && parsedJson.action_items) {
+              return {
+                response: parsedJson.response,
+                actionItems: parsedJson.action_items
+              };
+            }
+          } catch (error) {
+            console.log('Failed to parse JSON from text:', error);
+          }
+        }
+        return null;
+      };
+      
+      if (data.answer) {
+        const extracted = extractJsonFromText(data.answer);
+        if (extracted) {
+          draftText = extracted.response;
+          extractedActionItems = extracted.actionItems;
+        } else {
+          // Try to parse the entire answer as JSON
+          try {
+            const parsedAnswer = JSON.parse(data.answer);
+            if (parsedAnswer.response && parsedAnswer.action_items) {
+              draftText = parsedAnswer.response;
+              extractedActionItems = parsedAnswer.action_items;
+            } else {
+              draftText = data.answer;
+            }
+          } catch {
+            draftText = data.answer;
+          }
+        }
+      } else if (data.response) {
+        const extracted = extractJsonFromText(data.response);
+        if (extracted) {
+          draftText = extracted.response;
+          extractedActionItems = extracted.actionItems;
+        } else {
+          draftText = data.response;
+        }
+      } else if (data.message && data.message.answer) {
+        const extracted = extractJsonFromText(data.message.answer);
+        if (extracted) {
+          draftText = extracted.response;
+          extractedActionItems = extracted.actionItems;
+        } else {
+          // Try to parse the entire message answer as JSON
+          try {
+            const parsedAnswer = JSON.parse(data.message.answer);
+            if (parsedAnswer.response && parsedAnswer.action_items) {
+              draftText = parsedAnswer.response;
+              extractedActionItems = parsedAnswer.action_items;
+            } else {
+              draftText = data.message.answer;
+            }
+          } catch {
+            draftText = data.message.answer;
+          }
+        }
+      } else if (data.content) {
+        const extracted = extractJsonFromText(data.content);
+        if (extracted) {
+          draftText = extracted.response;
+          extractedActionItems = extracted.actionItems;
+        } else {
+          draftText = data.content;
+        }
+      } else if (typeof data === 'string') {
+        const extracted = extractJsonFromText(data);
+        if (extracted) {
+          draftText = extracted.response;
+          extractedActionItems = extracted.actionItems;
+        } else {
+          // Try to parse the entire string as JSON
+          try {
+            const parsedData = JSON.parse(data);
+            if (parsedData.response && parsedData.action_items) {
+              draftText = parsedData.response;
+              extractedActionItems = parsedData.action_items;
+            } else {
+              draftText = data;
+            }
+          } catch {
+            draftText = data;
+          }
+        }
+      } else {
+        draftText = JSON.stringify(data);
+      }
+      
+      setGeneratedDraft(draftText);
+      setActionItems(extractedActionItems);
+      
+      // Auto-copy to clipboard
+      await copyToClipboard(draftText);
+    } catch (error) {
+      console.error('Error generating draft:', error);
+      alert('Error generating draft: ' + error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const SentimentIcon = getSentimentIcon(comment.sentiment);
 
   return (
@@ -204,8 +477,113 @@ export default function CommentCard({ comment, index = 0 }) {
         )}
       </div>
 
+      {/* Generated Draft Display */}
+      {generatedDraft && (
+        <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsResponseCollapsed(!isResponseCollapsed)}
+                className="flex items-center gap-1 text-sm font-medium text-green-800 hover:text-green-900"
+              >
+                Generated Response Draft
+                {isResponseCollapsed ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronUp className="h-4 w-4" />
+                )}
+              </motion.button>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => copyToClipboard(generatedDraft)}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-normal transition-colors ${
+                isCopied
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-green-100 text-green-600 hover:bg-green-200'
+              }`}
+            >
+              {isCopied ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3 w-3" />
+                  Copy
+                </>
+              )}
+            </motion.button>
+          </div>
+          {!isResponseCollapsed && (
+            <p className="text-sm text-green-700 leading-relaxed whitespace-pre-wrap">
+              {typeof generatedDraft === 'string' ? generatedDraft : JSON.stringify(generatedDraft)}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Action Items Display */}
+      {actionItems && actionItems.length > 0 && (
+        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsActionItemsCollapsed(!isActionItemsCollapsed)}
+              className="flex items-center gap-1 text-sm font-medium text-blue-800 hover:text-blue-900"
+            >
+              Action Items for Support Team
+              {isActionItemsCollapsed ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+            </motion.button>
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCompletedToggle}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-normal transition-colors ${
+                  isCompleted
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                }`}
+              >
+                {isCompleted ? (
+                  <>
+                    <CheckCircle className="h-3 w-3" />
+                    Completed
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-3 w-3" />
+                    Not Completed
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </div>
+          {!isActionItemsCollapsed && (
+            <ul className="space-y-1">
+              {actionItems.map((item, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm text-blue-700">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Footer */}
-      <div className="flex items-center pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
         <div className="flex items-center gap-4 text-xs text-gray-500">
           {isReviewPlatform(comment.platform) ? (
             // Reviews go first - show category and other review-specific info
@@ -229,56 +607,9 @@ export default function CommentCard({ comment, index = 0 }) {
                 </div>
               )}
             </>
-          ) : comment.platform === 'YouTube' ? (
-            // YouTube content second
-            <>
-              <div className="flex items-center gap-1">
-                <ThumbsUp className="h-3 w-3" />
-                <span>{comment.likeCount ? comment.likeCount.toLocaleString() : 0}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" />
-                <span>{comment.commentCount ? comment.commentCount.toLocaleString() : 0}</span>
-              </div>
-              {comment.viewCount && (
-                <div className="flex items-center gap-1">
-                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>{comment.viewCount.toLocaleString()}</span>
-                </div>
-              )}
-              {comment.category && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  {Array.isArray(comment.category) ? (
-                    comment.category.slice(0, 2).map((cat, idx) => (
-                      <span
-                        key={idx}
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(cat)}`}
-                      >
-                        {cat}
-                      </span>
-                    ))
-                  ) : (
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(comment.category)}`}>
-                      {comment.category}
-                    </span>
-                  )}
-                </div>
-              )}
-            </>
           ) : (
-            // Other platforms last
+            // Other platforms - show only categories
             <>
-              <div className="flex items-center gap-1">
-                <ThumbsUp className="h-3 w-3" />
-                <span>{comment.likes || 0}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" />
-                <span>{comment.replies || 0}</span>
-              </div>
               {comment.category && (
                 <div className="flex items-center gap-1 flex-wrap">
                   {Array.isArray(comment.category) ? (
@@ -307,6 +638,33 @@ export default function CommentCard({ comment, index = 0 }) {
             <span className="text-xs text-gray-400">👥 {comment.subscriberCount.toLocaleString()}</span>
           )}
         </div>
+      </div>
+      
+      {/* AI Generate Draft Button */}
+      <div className="mt-2 flex justify-end">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleGenerateDraft}
+          disabled={isGenerating}
+          className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-normal transition-colors ${
+            isGenerating
+              ? 'bg-purple-100 text-purple-400 cursor-not-allowed'
+              : 'bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 border border-purple-200'
+          }`}
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              AI Generating...
+            </>
+          ) : (
+            <>
+              <Bot className="h-3 w-3" />
+              AI Draft
+            </>
+          )}
+        </motion.button>
       </div>
     </motion.div>
   );
