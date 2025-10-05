@@ -1,0 +1,10 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+chromadb==0.4.22
+openai==1.10.0
+python-dotenv==1.0.0
+pandas==2.1.4
+numpy==1.26.3
+python-multipart==0.0.6
+httpx==0.26.0
